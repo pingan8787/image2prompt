@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <title>image2prompt Settings</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+
+<body>
+  <main class="options-app">
+    <div class="options-shell">
+      <aside class="options-sidebar">
+        <header class="sidebar-header">
+          <h1 data-i18n="title"></h1>
+          <p data-i18n="subtitle"></p>
+        </header>
+        <nav class="sidebar-nav" aria-label="Settings sections">
+          <a href="#section-gemini" class="sidebar-link" data-i18n="geminiHeading"></a>
+          <a href="#section-prompt" class="sidebar-link" data-i18n="promptHeading"></a>
+          <a href="#section-filter" class="sidebar-link" data-i18n="filterHeading"></a>
+          <a href="#section-platform" class="sidebar-link" data-i18n="platformHeading"></a>
+          <a href="#section-history" class="sidebar-link" data-i18n="historyHeading"></a>
+        </nav>
+        <div class="sidebar-language">
+          <span class="language-switch__label" data-i18n="languageLabel"></span>
+          <div class="language-switch__buttons">
+            <button type="button" data-lang="en" class="language-switch__btn">
+              EN
+            </button>
+            <button type="button" data-lang="zh" class="language-switch__btn">
+              中文
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="options-card">
+        <form id="options-form" class="options-form">
+          <section class="options-section" id="section-gemini">
+            <div class="options-section__heading">
+              <h2 data-i18n="geminiHeading"></h2>
+              <div class="options-section__key">
+                <p data-i18n="geminiDescription"></p>
+                <a href="https://aistudio.google.com/app/api-keys" target="_blank" rel="noopener noreferrer">
+                  <span data-i18n="createNewAPIKey"></span>
+                </a>
+              </div>
+            </div>
+            <label class="options-field">
+              <span data-i18n="apiKeyLabel"></span>
+              <input type="password" name="geminiApiKey" autocomplete="off" data-i18n="apiKeyPlaceholder"
+                data-i18n-attr="placeholder" />
+              <small data-i18n="apiKeyHelp"></small>
+            </label>
+            <label class="options-field">
+              <span data-i18n="modelLabel"></span>
+              <input type="text" name="model" data-i18n="modelPlaceholder" data-i18n-attr="placeholder" />
+            </label>
+          </section>
+
+          <section class="options-section" id="section-prompt">
+            <div class="options-section__heading">
+              <h2 data-i18n="promptHeading"></h2>
+              <p data-i18n="promptDescription"></p>
+            </div>
+            <label class="options-field">
+              <span data-i18n="instructionLabel"></span>
+              <textarea name="promptInstruction" rows="4" data-i18n="instructionPlaceholder"
+                data-i18n-attr="placeholder"></textarea>
+            </label>
+            <label class="options-field">
+              <span data-i18n="promptLanguageLabel"></span>
+              <select name="promptLanguage"></select>
+              <small data-i18n="promptLanguageHelp"></small>
+            </label>
+          </section>
+
+          <section class="options-section" id="section-filter">
+            <div class="options-section__heading">
+              <h2 data-i18n="filterHeading"></h2>
+              <p data-i18n="filterDescription"></p>
+            </div>
+            <div class="options-grid">
+              <label class="options-field">
+                <span data-i18n="minWidthLabel"></span>
+                <input type="number" name="minImageWidth" min="0" />
+              </label>
+              <label class="options-field">
+                <span data-i18n="minHeightLabel"></span>
+                <input type="number" name="minImageHeight" min="0" />
+              </label>
+            </div>
+          </section>
+
+          <section class="options-section" id="section-platform">
+            <div class="options-section__heading">
+              <h2 data-i18n="platformHeading"></h2>
+              <p data-i18n="platformDescription"></p>
+            </div>
+            <label class="options-field">
+              <span data-i18n="platformSelectLabel"></span>
+              <select name="selectedPlatform"></select>
+              <small data-i18n="platformSelectHelp"></small>
+            </label>
+            <label class="options-field">
+              <span data-i18n="platformLabel"></span>
+              <input type="url" name="platformUrl" data-i18n="platformPlaceholder" data-i18n-attr="placeholder" />
+              <small data-i18n="platformHelp"></small>
+            </label>
+            <div class="platform-custom">
+              <h3 data-i18n="customPlatformsHeading"></h3>
+              <p class="platform-custom__empty" data-i18n="customPlatformsEmpty"></p>
+              <ul class="platform-custom__list"></ul>
+              <div class="platform-custom__form">
+                <input type="text" name="customPlatformName" data-i18n="customNamePlaceholder"
+                  data-i18n-attr="placeholder" />
+                <input type="url" name="customPlatformUrl" data-i18n="customUrlPlaceholder"
+                  data-i18n-attr="placeholder" />
+                <button type="button" class="platform-custom__add" data-i18n="customAddButton"></button>
+              </div>
+            </div>
+            <label class="options-toggle">
+              <input type="checkbox" name="autoOpenPlatform" />
+              <div class="options-toggle__visual" aria-hidden="true">
+                <div class="options-toggle__thumb"></div>
+              </div>
+              <div class="options-toggle__content">
+                <span class="options-toggle__label" data-i18n="autoOpenLabel"></span>
+                <small class="options-toggle__help" data-i18n="autoOpenHelp"></small>
+              </div>
+            </label>
+          </section>
+
+          <section class="options-section" id="section-history">
+            <div class="options-section__heading">
+              <h2 data-i18n="historyHeading"></h2>
+              <p data-i18n="historyDescription"></p>
+            </div>
+            <p class="history-empty" data-i18n="historyEmpty"></p>
+            <ul class="history-list"></ul>
+          </section>
+
+          <div class="options-actions">
+            <button type="submit" class="options-submit" data-i18n="saveButton"></button>
+            <span id="options-status" class="options-status" role="status"></span>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+  <script src="options.js"></script>
+</body>
+
+</html>

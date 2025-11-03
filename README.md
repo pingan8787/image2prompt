@@ -4,7 +4,7 @@
 
 [English](README.md)
 [中文](README.zh-CN.md)
-[WiseMindAI](https://wisemindai.app/)
+[WiseMindAI](https://wisemindai.app/?utm_source=github-image2prompt)
 
 </div>
 

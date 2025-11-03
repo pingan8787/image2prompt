@@ -1,41 +1,57 @@
-# 🚀 image2prompt
+<h1 align="center">image2prompt</h1>
 
-> 一款由 AI 全程自动编写、为创作者和设计师打造的 Chrome 插件。  
-> 只需点击网页中的图片，就能自动生成高质量提示词（Prompt），并一键跳转到你喜欢的 AI 平台复现图片风格。
+<div align="center">
 
-## 🌟 项目简介
+[English](README.md)
+[中文](README.zh-CN.md)
+[WiseMindAI](https://wisemindai.app/)
 
-**image2prompt** 是一个为创作者、设计师、AI 用户设计的轻量小工具。  
-当你在网页上看到一张喜欢的图片，只需将鼠标移上去，右下角会出现一个小图标按钮 👇  
-点击后，它会自动上传图片、生成提示词、复制到剪贴板，并跳转到你常用的 AI 平台生成相似风格图片。
+</div>
 
-![项目简介](https://github.com/user-attachments/assets/905995c7-bdb6-4c8f-b70d-44b24684c99d)
+## 🌟 Overview
 
-## ⚙️ 功能特性
+**image2prompt** is a lightweight tool designed for creators, designers, and AI users.  
+When you hover over an image on any webpage, a small icon button will appear in the bottom-right corner 👇  
+Click it, and the extension will automatically upload the image, generate a prompt, copy it to your clipboard, and open your preferred AI platform to reproduce the same style.
 
-| 功能模块              | 说明                                                                                          |
-| --------------------- | --------------------------------------------------------------------------------------------- |
-| 🧩 **模型选择**       | 目前默认支持 Gemini 2.5 Flash                                                                 |
-| 🌏 **多语言生成**     | 可选择 20 个国家语言生成提示词                                                                |
-| 🖼️ **图片尺寸过滤**   | 仅大于设定尺寸（默认 256×256）的图片显示按钮                                                  |
-| 📒 **生成历史**       | 你可以查看所有生成的历史                                                                      |
-| 🎨 **自定义平台跳转** | 可配置默认跳转平台：OpenAI / Gemini / StableDiffusion / 即梦 / 可灵 / 豆包 / 海螺 AI / 自定义 |
-| 💬 **提示词模板**     | 支持编辑提示词生成模板，打造你的专属风格                                                      |
-| 📒 **生成历史记录**   | 查看所有历史生成记录                                                                          |
-| 🧭 **国际化界面**     | 支持中英文切换                                                                                |
-| 🪶 **轻量级 UI**      | 借鉴 shadcnUI 风格，自绘组件，不依赖第三方库                                                  |
-| 🔓 **开源与免费**     | 完全开源，永久免费使用                                                                        |
+![Overview](https://github.com/user-attachments/assets/905995c7-bdb6-4c8f-b70d-44b24684c99d)
 
-## 🌈 安装方式
+## ⚙️ Features
 
-1. 克隆或下载本仓库
+| Feature Module              | Description                                                                                                          |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| 🧩 **Model Selection**      | Currently supports **Gemini 2.5 Flash** by default                                                                   |
+| 🌏 **Multilingual Output**  | Generate prompts in 20 different languages                                                                           |
+| 🖼️ **Image Size Filter**    | Only displays the button for images larger than the configured size (default: 256×256)                               |
+| 📒 **Generation History**   | View all your generated prompts anytime                                                                              |
+| 🎨 **Custom Platform Jump** | Configure the default AI platform: OpenAI / Gemini / StableDiffusion / JiMeng / Keling / Doubao / Hailuo AI / Custom |
+| 💬 **Prompt Templates**     | Edit and customize prompt generation templates to build your unique style                                            |
+| 🧭 **Internationalized UI** | Easily switch between English and Chinese                                                                            |
+| 🪶 **Lightweight UI**       | Inspired by shadcnUI, built with custom-drawn components and no third-party dependencies                             |
+| 🔓 **Open Source & Free**   | 100% open-source and completely free to use                                                                          |
+
+## 🌈 Installation
+
+1. Clone or download this repository:
 
 ```bash
 git clone https://github.com/pingan8787/image2prompt.git
 ```
 
-2. 安装
+2. Install the extension
 
-下载完项目后，在 Chrome 浏览器拓展程序页 `chrome://extensions/` 中开启“开发者模式”，然后将整个项目拖拽进去即可，也可以点击左上角“**加载未打包的拓展程序**”，选择项目文件夹。
+After downloading the project, open the Chrome Extensions page: `chrome://extensions/` enable **Developer mode**, then drag the entire project folder into the page.
 
-![安装](https://github.com/user-attachments/assets/eb006388-280b-4838-b7c3-7baf7fa37745)
+Alternatively, click Load unpacked, then select the project folder.
+
+![Install](https://github.com/user-attachments/assets/eb006388-280b-4838-b7c3-7baf7fa37745)
+
+## 🍭 Usage
+
+After installing the extension, open the configuration page to set your [Gemini API Key](https://aistudio.google.com/app/api-keys)：
+
+![Setting](https://github.com/user-attachments/assets/1fa8451f-e06b-4c75-b99c-695f4aafe7fc)
+
+Then, whenever you hover over an image on any webpage, you’ll see an “Edit” button at the bottom-right corner — click it to generate a prompt!
+
+![Project](https://github.com/user-attachments/assets/905995c7-bdb6-4c8f-b70d-44b24684c99d)

@@ -238,6 +238,8 @@ body {
 .options-section__key {
   display: flex;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .options-section__key a {
@@ -252,6 +254,15 @@ body {
   .options-section__heading p {
     color: rgba(226, 232, 240, 0.7);
   }
+}
+
+.provider-info {
+  margin-top: 12px;
+}
+
+.provider-info p {
+  margin: 0;
+  font-size: 14px;
 }
 
 .options-field {

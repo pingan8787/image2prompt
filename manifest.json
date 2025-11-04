@@ -9,7 +9,8 @@
   ],
   "host_permissions": [
     "<all_urls>",
-    "https://generativelanguage.googleapis.com/*"
+    "https://generativelanguage.googleapis.com/*",
+    "https://open.bigmodel.cn/*"
   ],
   "background": {
     "service_worker": "background.js",

@@ -1,22 +1,38 @@
+const DEFAULT_PROVIDER_ID = "gemini";
+
+const PROVIDER_DEFAULTS = {
+  gemini: {
+    name: "Gemini",
+    model: "gemini-2.5-flash"
+  },
+  zhipu: {
+    name: "Zhipu AI",
+    model: "glm-4v-plus"
+  }
+};
+
 const DEFAULT_CONFIG = {
+  llmProvider: DEFAULT_PROVIDER_ID,
+  providerSettings: createDefaultProviderSettings(),
   geminiApiKey: "",
-  model: "gemini-2.5-flash",
+  zhipuApiKey: "",
+  model: PROVIDER_DEFAULTS.gemini.model,
+  zhipuModel: PROVIDER_DEFAULTS.zhipu.model,
   promptInstruction:
     "You are an assistant that writes high quality text-to-image prompts. Provide a single prompt that can recreate the given image faithfully.",
-  platformUrl: "https://labs.openai.com/?prompt={{prompt}}",
+  platformUrl: "https://www.midjourney.com/?prompt={{prompt}}",
   minImageWidth: 256,
   minImageHeight: 256,
   promptLanguage: "en-US",
   language: "en",
   autoOpenPlatform: true,
-  selectedPlatformId: "openai",
-  selectedPlatformLabel: "OpenAI (DALL·E)",
+  selectedPlatformId: "midjourney",
+  selectedPlatformLabel: "Midjourney",
   customPlatforms: []
 };
 
 const HISTORY_STORAGE_KEY = "generationHistory";
 const MAX_HISTORY_ENTRIES = 100;
-const PROVIDER_NAME = "Gemini";
 
 const PROMPT_LANGUAGE_RULES = {
   "en-US": {
@@ -121,6 +137,21 @@ const PROMPT_LANGUAGE_RULES = {
   }
 };
 
+const LLM_PROVIDERS = {
+  gemini: {
+    id: "gemini",
+    name: PROVIDER_DEFAULTS.gemini.name,
+    defaultModel: PROVIDER_DEFAULTS.gemini.model,
+    generate: requestPromptFromGemini
+  },
+  zhipu: {
+    id: "zhipu",
+    name: PROVIDER_DEFAULTS.zhipu.name,
+    defaultModel: PROVIDER_DEFAULTS.zhipu.model,
+    generate: requestPromptFromZhipu
+  }
+};
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "generatePrompt") {
     handleGeneratePrompt(message, sender)
@@ -142,17 +173,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function handleGeneratePrompt(message, sender) {
   const config = await getConfig();
+  const { providerId, provider, settings } = resolveProvider(config);
   const imageData = await getImageDataFromMessage(message);
   const languageDirective = getLanguageDirective(config.promptLanguage);
   const instruction = config.promptInstruction || DEFAULT_CONFIG.promptInstruction;
-  const model = config.model || DEFAULT_CONFIG.model;
+  const model =
+    settings.model?.trim() ||
+    provider.defaultModel ||
+    PROVIDER_DEFAULTS[DEFAULT_PROVIDER_ID].model;
 
-  if (!config.geminiApiKey) {
-    throw new Error("Gemini API key is not set in the extension options.");
+  if (!settings.apiKey) {
+    throw new Error(`${provider.name} API key is not set in the extension options.`);
   }
-
-  const promptText = await requestPromptFromGemini({
-    apiKey: config.geminiApiKey,
+  console.log('[image2prompt 提示词配置]', {
+    apiKey: settings.apiKey,
+    model,
+    instruction,
+    languageDirective,
+    imageBase64: imageData.data,
+    imageMimeType: imageData.mimeType,
+    altText: message.imageAlt || ""
+  })
+  const promptText = await provider.generate({
+    apiKey: settings.apiKey,
     model,
     instruction,
     languageDirective,
@@ -163,7 +206,7 @@ async function handleGeneratePrompt(message, sender) {
 
   const trimmedPrompt = promptText.trim();
   if (!trimmedPrompt) {
-    throw new Error("Gemini did not return any prompt text.");
+    throw new Error(`${provider.name} did not return any prompt text.`);
   }
   const platformUrl = buildPlatformUrl(config.platformUrl, trimmedPrompt);
   const shouldAutoOpen = config.autoOpenPlatform !== false;
@@ -180,7 +223,8 @@ async function handleGeneratePrompt(message, sender) {
 
   appendGenerationHistorySafe({
     prompt: trimmedPrompt,
-    provider: PROVIDER_NAME,
+    provider: provider.name,
+    providerId,
     model,
     createdAt: Date.now(),
     platformName: config.selectedPlatformLabel || config.selectedPlatformId || "",
@@ -199,7 +243,7 @@ async function getConfig() {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError);
       } else {
-        resolve(items);
+        resolve(sanitizeConfig(items));
       }
     });
   });
@@ -305,7 +349,7 @@ async function requestPromptFromGemini({
     const errorDetails = await safeReadJson(response);
     throw new Error(
       errorDetails?.error?.message ||
-        `Gemini API error (status ${response.status}).`
+      `Gemini API error (status ${response.status}).`
     );
   }
 
@@ -322,6 +366,113 @@ async function requestPromptFromGemini({
   }
 
   return promptText;
+}
+
+async function requestPromptFromZhipu({
+  apiKey,
+  model,
+  instruction,
+  languageDirective,
+  imageBase64,
+  imageMimeType,
+  altText
+}) {
+  const url = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+  const textSegments = [];
+  const trimmedInstruction = instruction?.trim() ?? "";
+  const trimmedDirective = languageDirective?.trim() ?? "";
+
+  if (trimmedInstruction) {
+    textSegments.push(trimmedInstruction);
+  }
+  if (trimmedDirective) {
+    textSegments.push(trimmedDirective);
+  }
+  if (altText) {
+    textSegments.push(`Image alt text: ${altText}`);
+  }
+
+  const content = [];
+  if (textSegments.length > 0) {
+    content.push({
+      type: "text",
+      text: textSegments.join("\n\n")
+    });
+  }
+  const safeMimeType = imageMimeType || "image/png";
+  content.push({
+    type: "image_url",
+    image_url: {
+      url: `data:${safeMimeType};base64,${imageBase64}`
+    }
+  });
+
+  const payload = {
+    model,
+    messages: [
+      {
+        role: "user",
+        content
+      }
+    ],
+    temperature: 0.4,
+    top_p: 0.95
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorDetails = await safeReadJson(response);
+    throw new Error(
+      errorDetails?.error?.message ||
+      `Zhipu AI API error (status ${response.status}).`
+    );
+  }
+
+  const result = await response.json();
+  const messageContent = result?.choices?.[0]?.message?.content;
+  const promptText = extractTextFromZhipuContent(messageContent).trim();
+  if (!promptText) {
+    throw new Error("Zhipu AI did not return any prompt text.");
+  }
+  return promptText;
+}
+
+function extractTextFromZhipuContent(content) {
+  if (!content) {
+    return "";
+  }
+  if (typeof content === "string") {
+    return content;
+  }
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => extractTextFromZhipuContent(part))
+      .filter(Boolean)
+      .join("\n");
+  }
+  if (typeof content === "object") {
+    if (typeof content.text === "string") {
+      return content.text;
+    }
+    if (content.type === "text" && typeof content.text === "string") {
+      return content.text;
+    }
+    if (content.type === "output_text" && typeof content.text === "string") {
+      return content.text;
+    }
+    if (Array.isArray(content.content)) {
+      return extractTextFromZhipuContent(content.content);
+    }
+  }
+  return "";
 }
 
 function buildPlatformUrl(template, prompt) {
@@ -435,11 +586,27 @@ function sanitizeHistoryEntry(entry) {
     return null;
   }
   const id = entry.id || `hist-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const rawProviderName = entry.provider ? String(entry.provider) : "";
+  let providerId = entry.providerId ? normalizeProviderId(entry.providerId) : "";
+  if (!providerId && rawProviderName) {
+    providerId = inferProviderIdFromName(rawProviderName);
+  }
+  if (!providerId) {
+    providerId = DEFAULT_PROVIDER_ID;
+  }
+  const providerDescriptor = LLM_PROVIDERS[providerId];
+  const providerName =
+    rawProviderName ||
+    providerDescriptor?.name ||
+    PROVIDER_DEFAULTS[providerId]?.name ||
+    PROVIDER_DEFAULTS[DEFAULT_PROVIDER_ID].name;
+  const defaultModel = PROVIDER_DEFAULTS[providerId]?.model || "";
   return {
     id,
     prompt: String(entry.prompt || ""),
-    provider: entry.provider || PROVIDER_NAME,
-    model: entry.model || "",
+    provider: providerName,
+    providerId,
+    model: entry.model ? String(entry.model) : defaultModel,
     platformName: entry.platformName || "",
     platformId: entry.platformId || "",
     platformUrl: entry.platformUrl || "",
@@ -468,4 +635,107 @@ function writeGenerationHistory(history) {
       }
     });
   });
+}
+
+function resolveProvider(config) {
+  const providerId = normalizeProviderId(config.llmProvider);
+  const provider = LLM_PROVIDERS[providerId] || LLM_PROVIDERS[DEFAULT_PROVIDER_ID];
+  const settingsSource =
+    config.providerSettings?.[providerId] || createDefaultProviderSettings()[providerId];
+  return {
+    providerId,
+    provider,
+    settings: {
+      apiKey: settingsSource?.apiKey ? String(settingsSource.apiKey) : "",
+      model: settingsSource?.model
+        ? String(settingsSource.model)
+        : provider.defaultModel
+    }
+  };
+}
+
+function sanitizeConfig(raw) {
+  const merged = { ...DEFAULT_CONFIG, ...raw };
+  const providerSettings = sanitizeProviderSettings(raw?.providerSettings, raw);
+  merged.providerSettings = providerSettings;
+  merged.llmProvider = normalizeProviderId(raw?.llmProvider ?? merged.llmProvider);
+  merged.geminiApiKey = providerSettings.gemini.apiKey;
+  merged.model = providerSettings.gemini.model;
+  merged.zhipuApiKey = providerSettings.zhipu.apiKey;
+  merged.zhipuModel = providerSettings.zhipu.model;
+  return merged;
+}
+
+function sanitizeProviderSettings(raw, legacySource = {}) {
+  const result = createDefaultProviderSettings();
+  if (raw && typeof raw === "object") {
+    Object.entries(raw).forEach(([providerId, entry]) => {
+      if (!entry || typeof entry !== "object") {
+        return;
+      }
+      const normalized = normalizeProviderId(providerId);
+      result[normalized] = {
+        apiKey: entry.apiKey ? String(entry.apiKey) : "",
+        model: entry.model
+          ? String(entry.model)
+          : PROVIDER_DEFAULTS[normalized]?.model || ""
+      };
+    });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(legacySource, "geminiApiKey")) {
+    result.gemini.apiKey = legacySource.geminiApiKey
+      ? String(legacySource.geminiApiKey)
+      : "";
+  }
+  if (Object.prototype.hasOwnProperty.call(legacySource, "model")) {
+    result.gemini.model = legacySource.model
+      ? String(legacySource.model)
+      : PROVIDER_DEFAULTS.gemini.model;
+  }
+  if (Object.prototype.hasOwnProperty.call(legacySource, "zhipuApiKey")) {
+    result.zhipu.apiKey = legacySource.zhipuApiKey
+      ? String(legacySource.zhipuApiKey)
+      : "";
+  }
+  if (Object.prototype.hasOwnProperty.call(legacySource, "zhipuModel")) {
+    result.zhipu.model = legacySource.zhipuModel
+      ? String(legacySource.zhipuModel)
+      : PROVIDER_DEFAULTS.zhipu.model;
+  }
+
+  return result;
+}
+
+function createDefaultProviderSettings() {
+  const defaults = {};
+  Object.entries(PROVIDER_DEFAULTS).forEach(([id, descriptor]) => {
+    defaults[id] = {
+      apiKey: "",
+      model: descriptor.model
+    };
+  });
+  return defaults;
+}
+
+function normalizeProviderId(value) {
+  if (!value) {
+    return DEFAULT_PROVIDER_ID;
+  }
+  const id = String(value).toLowerCase();
+  return LLM_PROVIDERS[id]?.id || DEFAULT_PROVIDER_ID;
+}
+
+function inferProviderIdFromName(name) {
+  if (!name) {
+    return "";
+  }
+  const lower = String(name).toLowerCase();
+  if (lower.includes("zhipu") || lower.includes("glm") || lower.includes("智谱")) {
+    return "zhipu";
+  }
+  if (lower.includes("gemini")) {
+    return "gemini";
+  }
+  return "";
 }

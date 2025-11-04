@@ -20,7 +20,7 @@ Click it, and the extension will automatically upload the image, generate a prom
 
 | Feature Module              | Description                                                                                                          |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| 🧩 **Model Selection**      | Currently supports **Gemini 2.5 Flash** by default                                                                   |
+| 🧩 **Model Selection**      | Switch between **Gemini 2.5 Flash** and **Zhipu GLM-4V** — each keeps its own API key and model ID                   |
 | 🌏 **Multilingual Output**  | Generate prompts in 20 different languages                                                                           |
 | 🖼️ **Image Size Filter**    | Only displays the button for images larger than the configured size (default: 256×256)                               |
 | 📒 **Generation History**   | View all your generated prompts anytime                                                                              |
@@ -48,7 +48,10 @@ Alternatively, click Load unpacked, then select the project folder.
 
 ## 🍭 Usage
 
-After installing the extension, open the configuration page to set your [Gemini API Key](https://aistudio.google.com/app/api-keys)：
+After installing the extension, open the configuration page to choose your provider and set the corresponding API key:
+
+- Gemini: [Create a Gemini API key](https://aistudio.google.com/app/api-keys)
+- Zhipu AI: [Zhipu model overview & console](https://docs.bigmodel.cn/cn/guide/start/model-overview)
 
 ![Setting](https://github.com/user-attachments/assets/1fa8451f-e06b-4c75-b99c-695f4aafe7fc)
 

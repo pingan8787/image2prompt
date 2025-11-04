@@ -16,7 +16,7 @@
           <p data-i18n="subtitle"></p>
         </header>
         <nav class="sidebar-nav" aria-label="Settings sections">
-          <a href="#section-gemini" class="sidebar-link" data-i18n="geminiHeading"></a>
+          <a href="#section-llm" class="sidebar-link" data-i18n="llmHeading"></a>
           <a href="#section-prompt" class="sidebar-link" data-i18n="promptHeading"></a>
           <a href="#section-filter" class="sidebar-link" data-i18n="filterHeading"></a>
           <a href="#section-platform" class="sidebar-link" data-i18n="platformHeading"></a>
@@ -37,25 +37,36 @@
 
       <section class="options-card">
         <form id="options-form" class="options-form">
-          <section class="options-section" id="section-gemini">
+          <section class="options-section" id="section-llm">
             <div class="options-section__heading">
-              <h2 data-i18n="geminiHeading"></h2>
-              <div class="options-section__key">
-                <p data-i18n="geminiDescription"></p>
-                <a href="https://aistudio.google.com/app/api-keys" target="_blank" rel="noopener noreferrer">
-                  <span data-i18n="createNewAPIKey"></span>
-                </a>
-              </div>
+              <h2 data-i18n="llmHeading"></h2>
+              <p data-i18n="llmDescription"></p>
+            </div>
+            <label class="options-field">
+              <span data-i18n="llmProviderLabel"></span>
+              <select name="llmProvider"></select>
+              <small data-i18n="llmProviderHelp"></small>
+            </label>
+            <div class="options-section__key provider-info" data-provider-info="gemini">
+              <p data-i18n="providerGeminiDescription"></p>
+              <a href="https://aistudio.google.com/app/api-keys" target="_blank" rel="noopener noreferrer">
+                <span data-i18n="providerGeminiLink"></span>
+              </a>
+            </div>
+            <div class="options-section__key provider-info" data-provider-info="zhipu" hidden>
+              <p data-i18n="providerZhipuDescription"></p>
+              <a href="https://docs.bigmodel.cn/cn/guide/start/model-overview" target="_blank" rel="noopener noreferrer">
+                <span data-i18n="providerZhipuLink"></span>
+              </a>
             </div>
             <label class="options-field">
               <span data-i18n="apiKeyLabel"></span>
-              <input type="password" name="geminiApiKey" autocomplete="off" data-i18n="apiKeyPlaceholder"
-                data-i18n-attr="placeholder" />
-              <small data-i18n="apiKeyHelp"></small>
+              <input type="password" name="providerApiKey" autocomplete="off" />
+              <small data-provider-help="apiKey"></small>
             </label>
             <label class="options-field">
               <span data-i18n="modelLabel"></span>
-              <input type="text" name="model" data-i18n="modelPlaceholder" data-i18n-attr="placeholder" />
+              <input type="text" name="providerModel" />
             </label>
           </section>
 

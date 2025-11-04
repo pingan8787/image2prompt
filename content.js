@@ -1,16 +1,29 @@
 const DEFAULT_CONFIG = {
+  llmProvider: "gemini",
+  providerSettings: {
+    gemini: {
+      apiKey: "",
+      model: "gemini-2.5-flash"
+    },
+    zhipu: {
+      apiKey: "",
+      model: "glm-4v-plus"
+    }
+  },
   geminiApiKey: "",
+  zhipuApiKey: "",
   model: "gemini-2.5-flash",
+  zhipuModel: "glm-4v-plus",
   promptInstruction:
     "You are an assistant that writes high quality text-to-image prompts. Provide a single prompt that can recreate the given image faithfully.",
-  platformUrl: "https://labs.openai.com/?prompt={{prompt}}",
+  platformUrl: "https://www.midjourney.com/?prompt={{prompt}}",
   minImageWidth: 256,
   minImageHeight: 256,
   promptLanguage: "en-US",
   language: "en",
   autoOpenPlatform: true,
-  selectedPlatformId: "openai",
-  selectedPlatformLabel: "OpenAI (DALL·E)",
+  selectedPlatformId: "midjourney",
+  selectedPlatformLabel: "Midjourney",
   customPlatforms: []
 };
 

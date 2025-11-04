@@ -1,6 +1,49 @@
+const DEFAULT_PROVIDER_ID = "gemini";
+
+const PROVIDER_DEFAULTS = {
+  gemini: {
+    apiKey: "",
+    model: "gemini-2.5-flash"
+  },
+  zhipu: {
+    apiKey: "",
+    model: "glm-4v-plus"
+  }
+};
+
+const LLM_PROVIDERS = [
+  {
+    id: "gemini",
+    labelKey: "providerGeminiLabel",
+    descriptionKey: "providerGeminiDescription",
+    keyLink: "https://aistudio.google.com/app/api-keys",
+    keyLinkLabelKey: "providerGeminiLink",
+    defaultModel: PROVIDER_DEFAULTS.gemini.model,
+    apiKeyPlaceholderKey: "apiKeyPlaceholderGemini",
+    apiKeyHelpKey: "apiKeyHelpGemini",
+    modelPlaceholderKey: "modelPlaceholderGemini"
+  },
+  {
+    id: "zhipu",
+    labelKey: "providerZhipuLabel",
+    descriptionKey: "providerZhipuDescription",
+    keyLink: "https://open.bigmodel.cn/usercenter/apikeys",
+    keyLinkLabelKey: "providerZhipuLink",
+    docsLink: "https://docs.bigmodel.cn/cn/guide/start/model-overview",
+    defaultModel: PROVIDER_DEFAULTS.zhipu.model,
+    apiKeyPlaceholderKey: "apiKeyPlaceholderZhipu",
+    apiKeyHelpKey: "apiKeyHelpZhipu",
+    modelPlaceholderKey: "modelPlaceholderZhipu"
+  }
+];
+
 const DEFAULT_CONFIG = {
+  llmProvider: DEFAULT_PROVIDER_ID,
+  providerSettings: createDefaultProviderSettings(),
   geminiApiKey: "",
-  model: "gemini-2.5-flash",
+  zhipuApiKey: "",
+  model: PROVIDER_DEFAULTS.gemini.model,
+  zhipuModel: PROVIDER_DEFAULTS.zhipu.model,
   promptInstruction:
     "You are an assistant that writes high quality text-to-image prompts. Provide a single prompt that can recreate the given image faithfully.",
   platformUrl: "https://www.midjourney.com/?prompt={{prompt}}",
@@ -19,20 +62,30 @@ const TEXT_CONTENT = {
     title: "image2prompt",
     subtitle: "Configure how prompts are generated and shared.",
     languageLabel: "Language",
-    geminiHeading: "Gemini API",
-    geminiDescription: "Connect your Gemini API key and pick a model.",
-    createNewAPIKey: '👉 Create API Key',
+    llmHeading: "Model provider",
+    llmDescription: "Choose which large language model generates prompts.",
+    llmProviderLabel: "AI provider",
+    llmProviderHelp: "Each provider stores its own API key and model identifier.",
+    providerGeminiLabel: "Google Gemini",
+    providerGeminiDescription: "Connect your Gemini API key and pick a model.",
+    providerGeminiLink: "👉 Create Gemini API Key",
+    providerZhipuLabel: "Zhipu AI",
+    providerZhipuDescription: "Use Zhipu's multimodal models to extract prompts from images.",
+    providerZhipuLink: "👉 Manage Zhipu API Keys",
     apiKeyLabel: "API key",
-    apiKeyPlaceholder: "Paste your Gemini API key",
-    apiKeyHelp: "Your key is saved locally using Chrome sync storage.",
+    apiKeyPlaceholderGemini: "Paste your Gemini API key",
+    apiKeyPlaceholderZhipu: "Paste your Zhipu API key",
+    apiKeyHelpGemini: "Your key is saved locally using Chrome sync storage.",
+    apiKeyHelpZhipu: "Your key is saved locally using Chrome sync storage.",
     modelLabel: "Model identifier",
-    modelPlaceholder: "gemini-2.5-flash",
+    modelPlaceholderGemini: "gemini-2.5-flash",
+    modelPlaceholderZhipu: "glm-4v-plus",
     promptHeading: "Prompt Generation",
-    promptDescription: "Tune the instruction sent to Gemini.",
+    promptDescription: "Tune the instruction sent to the model.",
     instructionLabel: "Instruction prompt",
-    instructionPlaceholder: "Describe how Gemini should craft the text-to-image prompt.",
+    instructionPlaceholder: "Describe how the model should craft the text-to-image prompt.",
     promptLanguageLabel: "Prompt language",
-    promptLanguageHelp: "Gemini will reply in the selected locale.",
+    promptLanguageHelp: "The model replies in the selected locale.",
     filterHeading: "Image Filter",
     filterDescription: "Only show the button on images that meet these minimum dimensions.",
     minWidthLabel: "Minimum width (px)",
@@ -76,20 +129,30 @@ const TEXT_CONTENT = {
     title: "图像提示词助手",
     subtitle: "设置提示词的生成方式与跳转平台。",
     languageLabel: "界面语言",
-    geminiHeading: "Gemini API",
-    geminiDescription: "连接 Gemini API key 并选择模型。",
-    createNewAPIKey: '👉 点击创建 API Key',
+    llmHeading: "大模型设置",
+    llmDescription: "选择用于生成提示词的大语言模型。",
+    llmProviderLabel: "模型提供商",
+    llmProviderHelp: "不同提供商可以分别保存自己的 API 密钥和模型名称。",
+    providerGeminiLabel: "Google Gemini",
+    providerGeminiDescription: "连接 Gemini API key 并选择模型。",
+    providerGeminiLink: "👉 创建 Gemini API Key",
+    providerZhipuLabel: "智谱 AI",
+    providerZhipuDescription: "使用智谱多模态模型从图片中提炼提示词。",
+    providerZhipuLink: "👉 前往智谱控制台",
     apiKeyLabel: "API 密钥",
-    apiKeyPlaceholder: "粘贴你的 Gemini API key",
-    apiKeyHelp: "密钥仅保存在本地的 Chrome 同步存储中。",
+    apiKeyPlaceholderGemini: "粘贴你的 Gemini API key",
+    apiKeyPlaceholderZhipu: "粘贴你的智谱 API key",
+    apiKeyHelpGemini: "密钥仅保存在本地的 Chrome 同步存储中。",
+    apiKeyHelpZhipu: "密钥仅保存在本地的 Chrome 同步存储中。",
     modelLabel: "模型标识",
-    modelPlaceholder: "gemini-2.5-flash",
+    modelPlaceholderGemini: "gemini-2.5-flash",
+    modelPlaceholderZhipu: "glm-4v-plus",
     promptHeading: "提示词生成",
-    promptDescription: "自定义发送给 Gemini 的说明。",
+    promptDescription: "自定义发送给模型的说明。",
     instructionLabel: "说明提示词",
-    instructionPlaceholder: "描述你希望 Gemini 如何编写这段提示词。",
+    instructionPlaceholder: "描述你希望模型如何编写这段提示词。",
     promptLanguageLabel: "生成语言",
-    promptLanguageHelp: "Gemini 会按照所选地区语言返回提示词。",
+    promptLanguageHelp: "模型会按照所选的语言返回提示词。",
     filterHeading: "图片筛选",
     filterDescription: "只在满足最低尺寸的图片上显示按钮。",
     minWidthLabel: "最小宽度（像素）",
@@ -195,6 +258,11 @@ const BUILTIN_PLATFORMS = [
 let currentLanguage = DEFAULT_CONFIG.language;
 let currentPromptLanguageSelection = DEFAULT_CONFIG.promptLanguage;
 let promptLanguageSelectEl = null;
+let providerSelectEl = null;
+let providerApiKeyInput = null;
+let providerModelInput = null;
+let providerApiKeyHelpEl = null;
+let providerInfoSections = new Map();
 let platformSelectEl = null;
 let customListEl = null;
 let customEmptyEl = null;
@@ -206,6 +274,8 @@ let customPlatformsState = [...DEFAULT_CONFIG.customPlatforms];
 let selectedPlatformId = DEFAULT_CONFIG.selectedPlatformId;
 let formEl = null;
 let selectedPlatformLabel = DEFAULT_CONFIG.selectedPlatformLabel;
+let currentProviderId = DEFAULT_CONFIG.llmProvider || DEFAULT_PROVIDER_ID;
+let providerSettingsState = createDefaultProviderSettings();
 const HISTORY_STORAGE_KEY = "generationHistory";
 let generationHistoryState = [];
 let historyListEl = null;
@@ -228,6 +298,17 @@ document.addEventListener("DOMContentLoaded", () => {
   customAddButton = document.querySelector(".platform-custom__add");
   historyListEl = document.querySelector(".history-list");
   historyEmptyEl = document.querySelector(".history-empty");
+  providerSelectEl = form?.llmProvider || null;
+  providerApiKeyInput = form?.providerApiKey || null;
+  providerModelInput = form?.providerModel || null;
+  providerApiKeyHelpEl = document.querySelector("[data-provider-help='apiKey']");
+  providerInfoSections = new Map();
+  document.querySelectorAll("[data-provider-info]").forEach((node) => {
+    const providerId = node.dataset.providerInfo;
+    if (providerId) {
+      providerInfoSections.set(providerId, node);
+    }
+  });
 
   promptLanguageSelectEl = form?.promptLanguage || null;
   if (promptLanguageSelectEl) {
@@ -242,6 +323,22 @@ document.addEventListener("DOMContentLoaded", () => {
       selectedPlatformId = normalizePlatformId(event.target.value);
       selectedPlatformLabel = getPlatformLabelById(selectedPlatformId);
       syncPlatformUrlWithSelection(form);
+    });
+  }
+
+  if (providerSelectEl) {
+    providerSelectEl.addEventListener("change", (event) => {
+      const nextProvider = normalizeProviderId(event.target.value);
+      persistCurrentProviderInputs(form);
+      if (nextProvider === currentProviderId) {
+        updateProviderInfoVisibility();
+        updateProviderFieldPlaceholders();
+        return;
+      }
+      currentProviderId = nextProvider;
+      syncProviderInputs(form);
+      updateProviderInfoVisibility();
+      updateProviderFieldPlaceholders();
     });
   }
 
@@ -319,6 +416,11 @@ function restoreOptions(form, statusEl) {
     currentPromptLanguageSelection = normalizePromptLanguage(
       items.promptLanguage
     );
+    providerSettingsState = sanitizeProviderSettings(
+      items.providerSettings,
+      items
+    );
+    currentProviderId = normalizeProviderId(items.llmProvider);
     customPlatformsState = Array.isArray(items.customPlatforms)
       ? items.customPlatforms
         .map(sanitizeCustomPlatform)
@@ -331,8 +433,11 @@ function restoreOptions(form, statusEl) {
       Array.from(document.querySelectorAll(".language-switch__btn"))
     );
 
-    form.geminiApiKey.value = items.geminiApiKey || "";
-    form.model.value = items.model || DEFAULT_CONFIG.model;
+    if (providerSelectEl) {
+      providerSelectEl.value = currentProviderId;
+    }
+    syncProviderInputs(form, { force: true });
+
     form.promptInstruction.value =
       items.promptInstruction || DEFAULT_CONFIG.promptInstruction;
     form.platformUrl.value =
@@ -350,6 +455,8 @@ function restoreOptions(form, statusEl) {
     if (promptLanguageSelectEl) {
       promptLanguageSelectEl.value = currentPromptLanguageSelection;
     }
+    updateProviderInfoVisibility();
+    updateProviderFieldPlaceholders();
     renderCustomPlatforms();
     renderPlatformOptions();
     if (platformSelectEl) {
@@ -360,9 +467,15 @@ function restoreOptions(form, statusEl) {
 }
 
 function saveOptions(form, statusEl) {
+  persistCurrentProviderInputs(form);
+  const providerSettings = cloneProviderSettings(providerSettingsState);
   const payload = {
-    geminiApiKey: form.geminiApiKey.value.trim(),
-    model: form.model.value.trim() || DEFAULT_CONFIG.model,
+    llmProvider: currentProviderId,
+    providerSettings,
+    geminiApiKey: providerSettings.gemini?.apiKey || "",
+    zhipuApiKey: providerSettings.zhipu?.apiKey || "",
+    model: providerSettings.gemini?.model || PROVIDER_DEFAULTS.gemini.model,
+    zhipuModel: providerSettings.zhipu?.model || PROVIDER_DEFAULTS.zhipu.model,
     promptInstruction: form.promptInstruction.value.trim(),
     platformUrl: form.platformUrl.value.trim(),
     minImageWidth: clampToNumber(
@@ -399,6 +512,7 @@ function saveOptions(form, statusEl) {
     name,
     url
   }));
+  payload.providerSettings = providerSettings;
 
   renderCustomPlatforms();
   renderPlatformOptions();
@@ -422,10 +536,13 @@ function applyLanguage(lang) {
   document.documentElement.lang = normalized === "zh" ? "zh-CN" : "en";
   document.title = dictionary.title;
   renderPromptLanguageOptions(promptLanguageSelectEl);
+  renderProviderOptions();
   renderCustomPlatforms();
   renderPlatformOptions();
   syncPlatformUrlWithSelection(formEl, { preserveExisting: true });
   renderHistory();
+  updateProviderInfoVisibility();
+  updateProviderFieldPlaceholders();
 
   const elements = document.querySelectorAll("[data-i18n]");
   elements.forEach((el) => {
@@ -506,6 +623,26 @@ function renderPromptLanguageOptions(select) {
   select.value = targetValue;
 }
 
+function renderProviderOptions() {
+  if (!providerSelectEl) {
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  LLM_PROVIDERS.forEach((provider) => {
+    const option = document.createElement("option");
+    option.value = provider.id;
+    option.textContent = translate(provider.labelKey);
+    fragment.appendChild(option);
+  });
+
+  const normalizedId = normalizeProviderId(currentProviderId);
+  currentProviderId = normalizedId;
+  providerSelectEl.innerHTML = "";
+  providerSelectEl.appendChild(fragment);
+  providerSelectEl.value = normalizedId;
+}
+
 function renderPlatformOptions() {
   if (!platformSelectEl) {
     return;
@@ -541,6 +678,87 @@ function renderPlatformOptions() {
   platformSelectEl.innerHTML = "";
   platformSelectEl.appendChild(fragment);
   platformSelectEl.value = normalizedId;
+}
+
+function syncProviderInputs(form, options = {}) {
+  const { force = false } = options;
+  const entry = getProviderSettingsFromState(currentProviderId);
+
+  if (providerApiKeyInput) {
+    if (force || document.activeElement !== providerApiKeyInput) {
+      providerApiKeyInput.value = entry.apiKey || "";
+    }
+  }
+
+  if (providerModelInput) {
+    if (force || document.activeElement !== providerModelInput) {
+      providerModelInput.value = entry.model || "";
+    }
+  }
+}
+
+function persistCurrentProviderInputs(form) {
+  if (!form) {
+    return;
+  }
+  const entry = getProviderSettingsFromState(currentProviderId);
+  const apiKeyValue =
+    form.providerApiKey?.value ?? providerApiKeyInput?.value ?? "";
+  const modelValue =
+    form.providerModel?.value ?? providerModelInput?.value ?? "";
+  entry.apiKey = apiKeyValue.trim();
+  const descriptor = getProviderDescriptor(currentProviderId);
+  const defaultModel =
+    descriptor?.defaultModel ??
+    PROVIDER_DEFAULTS[currentProviderId]?.model ??
+    "";
+  entry.model = modelValue.trim() || defaultModel;
+  providerSettingsState[currentProviderId] = { ...entry };
+}
+
+function updateProviderInfoVisibility() {
+  if (!providerInfoSections || providerInfoSections.size === 0) {
+    return;
+  }
+  const activeId = normalizeProviderId(currentProviderId);
+  providerInfoSections.forEach((node, providerId) => {
+    if (!node) {
+      return;
+    }
+    node.hidden = normalizeProviderId(providerId) !== activeId;
+  });
+}
+
+function updateProviderFieldPlaceholders() {
+  const descriptor = getProviderDescriptor(currentProviderId);
+  if (!descriptor) {
+    return;
+  }
+
+  if (providerApiKeyInput) {
+    const placeholderKey = descriptor.apiKeyPlaceholderKey;
+    if (placeholderKey) {
+      providerApiKeyInput.placeholder = translate(placeholderKey);
+    }
+  }
+
+  if (providerApiKeyHelpEl) {
+    const helpKey = descriptor.apiKeyHelpKey;
+    if (helpKey) {
+      providerApiKeyHelpEl.textContent = translate(helpKey);
+      providerApiKeyHelpEl.hidden = false;
+    } else {
+      providerApiKeyHelpEl.textContent = "";
+      providerApiKeyHelpEl.hidden = true;
+    }
+  }
+
+  if (providerModelInput) {
+    const modelPlaceholderKey = descriptor.modelPlaceholderKey;
+    if (modelPlaceholderKey) {
+      providerModelInput.placeholder = translate(modelPlaceholderKey);
+    }
+  }
 }
 
 function renderCustomPlatforms() {
@@ -872,11 +1090,27 @@ function normalizeHistoryEntry(entry) {
     return null;
   }
   const id = entry.id || `hist-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const rawProviderName = entry.provider ? String(entry.provider) : "";
+  let providerId = entry.providerId ? normalizeProviderId(entry.providerId) : "";
+  if (!providerId && rawProviderName) {
+    providerId = inferProviderIdFromName(rawProviderName);
+  }
+  if (!providerId) {
+    providerId = DEFAULT_PROVIDER_ID;
+  }
+  const providerDescriptor = getProviderDescriptor(providerId);
+  const providerName =
+    rawProviderName ||
+    providerDescriptor?.name ||
+    PROVIDER_DEFAULTS[providerId]?.name ||
+    PROVIDER_DEFAULTS[DEFAULT_PROVIDER_ID].name;
+  const defaultModel = PROVIDER_DEFAULTS[providerId]?.model || DEFAULT_CONFIG.model;
   return {
     id,
     prompt: String(entry.prompt || ""),
-    provider: entry.provider || "Gemini",
-    model: entry.model || DEFAULT_CONFIG.model,
+    provider: providerName,
+    providerId,
+    model: entry.model ? String(entry.model) : defaultModel,
     platformName: entry.platformName || entry.platformUrl || "",
     platformId: entry.platformId || "",
     platformUrl: entry.platformUrl || "",
@@ -938,4 +1172,106 @@ function sanitizeCustomPlatform(entry) {
   }
   const id = (entry.id || `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`).toString();
   return { id, name, url };
+}
+
+function normalizeProviderId(value) {
+  if (!value) {
+    return DEFAULT_PROVIDER_ID;
+  }
+  const id = String(value).toLowerCase();
+  const descriptor = LLM_PROVIDERS.find((provider) => provider.id === id);
+  return descriptor ? descriptor.id : DEFAULT_PROVIDER_ID;
+}
+
+function inferProviderIdFromName(name) {
+  if (!name) {
+    return "";
+  }
+  const lower = String(name).toLowerCase();
+  if (lower.includes("zhipu") || lower.includes("glm") || lower.includes("智谱")) {
+    return "zhipu";
+  }
+  if (lower.includes("gemini")) {
+    return "gemini";
+  }
+  return "";
+}
+
+function getProviderDescriptor(providerId) {
+  const normalized = normalizeProviderId(providerId);
+  return LLM_PROVIDERS.find((provider) => provider.id === normalized) || LLM_PROVIDERS[0];
+}
+
+function getProviderSettingsFromState(providerId) {
+  const normalized = normalizeProviderId(providerId);
+  if (!providerSettingsState[normalized]) {
+    providerSettingsState[normalized] = {
+      apiKey: PROVIDER_DEFAULTS[normalized]?.apiKey || "",
+      model: PROVIDER_DEFAULTS[normalized]?.model || ""
+    };
+  }
+  const entry = providerSettingsState[normalized];
+  if (typeof entry.apiKey !== "string") {
+    entry.apiKey = entry.apiKey ? String(entry.apiKey) : "";
+  }
+  if (typeof entry.model !== "string") {
+    entry.model = entry.model ? String(entry.model) : PROVIDER_DEFAULTS[normalized]?.model || "";
+  }
+  return entry;
+}
+
+function sanitizeProviderSettings(raw, legacySource = {}) {
+  const result = createDefaultProviderSettings();
+  if (raw && typeof raw === "object") {
+    Object.entries(raw).forEach(([providerId, entry]) => {
+      if (!entry || typeof entry !== "object") {
+        return;
+      }
+      const normalized = normalizeProviderId(providerId);
+      result[normalized] = {
+        apiKey: entry.apiKey ? String(entry.apiKey) : "",
+        model: entry.model
+          ? String(entry.model)
+          : PROVIDER_DEFAULTS[normalized]?.model || ""
+      };
+    });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(legacySource, "geminiApiKey")) {
+    result.gemini.apiKey = legacySource.geminiApiKey
+      ? String(legacySource.geminiApiKey)
+      : "";
+  }
+  if (Object.prototype.hasOwnProperty.call(legacySource, "model")) {
+    result.gemini.model = legacySource.model
+      ? String(legacySource.model)
+      : PROVIDER_DEFAULTS.gemini.model;
+  }
+  if (Object.prototype.hasOwnProperty.call(legacySource, "zhipuApiKey")) {
+    result.zhipu.apiKey = legacySource.zhipuApiKey
+      ? String(legacySource.zhipuApiKey)
+      : "";
+  }
+  if (Object.prototype.hasOwnProperty.call(legacySource, "zhipuModel")) {
+    result.zhipu.model = legacySource.zhipuModel
+      ? String(legacySource.zhipuModel)
+      : PROVIDER_DEFAULTS.zhipu.model;
+  }
+
+  return result;
+}
+
+function cloneProviderSettings(settings) {
+  return sanitizeProviderSettings(settings || {});
+}
+
+function createDefaultProviderSettings() {
+  const defaults = {};
+  Object.entries(PROVIDER_DEFAULTS).forEach(([id, entry]) => {
+    defaults[id] = {
+      apiKey: entry.apiKey,
+      model: entry.model
+    };
+  });
+  return defaults;
 }

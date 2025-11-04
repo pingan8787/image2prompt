@@ -40,7 +40,7 @@ git clone https://github.com/pingan8787/image2prompt.git
 
 2. Install the extension
 
-After downloading the project, open the Chrome Extensions page: `chrome://extensions/` enable **Developer mode**, then drag the entire project folder into the page.
+After downloading the project, open the Chrome/Edge Extensions page: `chrome://extensions/` / `edge://extensions/` enable **Developer mode**, then drag the entire project folder into the page.
 
 Alternatively, click Load unpacked, then select the project folder.
 

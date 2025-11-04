@@ -41,7 +41,7 @@ git clone https://github.com/pingan8787/image2prompt.git
 
 2. 安装
 
-下载完项目后，在 Chrome 浏览器拓展程序页 `chrome://extensions/` 中开启“开发者模式”，然后将整个项目拖拽进去即可，也可以点击左上角“**加载未打包的拓展程序**”，选择项目文件夹。
+下载完项目后，在 Chrome/Edge 浏览器拓展程序页 `chrome://extensions/` / `edge://extensions/` 中开启“开发者模式”，然后将整个项目拖拽进去即可，也可以点击左上角“**加载未打包的拓展程序**”，选择项目文件夹。
 
 ![安装](https://github.com/user-attachments/assets/eb006388-280b-4838-b7c3-7baf7fa37745)
 

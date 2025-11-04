@@ -61,6 +61,7 @@ const TEXT_CONTENT = {
   en: {
     title: "image2prompt",
     subtitle: "Configure how prompts are generated and shared.",
+    githubCta: "View on GitHub",
     languageLabel: "Language",
     llmHeading: "Model provider",
     llmDescription: "Choose which large language model generates prompts.",
@@ -128,6 +129,7 @@ const TEXT_CONTENT = {
   zh: {
     title: "图像提示词助手",
     subtitle: "设置提示词的生成方式与跳转平台。",
+    githubCta: "访问 GitHub 仓库",
     languageLabel: "界面语言",
     llmHeading: "大模型设置",
     llmDescription: "选择用于生成提示词的大语言模型。",

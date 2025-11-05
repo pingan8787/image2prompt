@@ -10,7 +10,7 @@
 
 ## 🌟 Overview
 
-**image2prompt** is a lightweight tool designed for creators, designers, and AI users.  
+**image2prompt** is a lightweight tool designed for creators, designers, and AI users, Used to generate Prompt words for any image on the web page with one click.  
 When you hover over an image on any webpage, a small icon button will appear in the bottom-right corner 👇  
 Click it, and the extension will automatically upload the image, generate a prompt, copy it to your clipboard, and open your preferred AI platform to reproduce the same style.
 
@@ -26,7 +26,7 @@ Click it, and the extension will automatically upload the image, generate a prom
 | 📒 **Generation History**   | View all your generated prompts anytime                                                                              |
 | 🎨 **Custom Platform Jump** | Configure the default AI platform: OpenAI / Gemini / StableDiffusion / JiMeng / Keling / Doubao / Hailuo AI / Custom |
 | 💬 **Prompt Templates**     | Edit and customize prompt generation templates to build your unique style                                            |
-| ✍️ **Custom Instructions**  | Enable a pre-generation dialog so you can blend extra guidance into every output                                      |
+| ✍️ **Custom Instructions**  | Enable a pre-generation dialog so you can blend extra guidance into every output                                     |
 | 🧭 **Internationalized UI** | Easily switch between English and Chinese                                                                            |
 | 🪶 **Lightweight UI**       | Inspired by shadcnUI, built with custom-drawn components and no third-party dependencies                             |
 | 🔓 **Open Source & Free**   | 100% open-source and completely free to use                                                                          |

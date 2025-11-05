@@ -55,7 +55,9 @@ const DEFAULT_CONFIG = {
   selectedPlatformId: "midjourney",
   selectedPlatformLabel: "Midjourney",
   customPlatforms: [],
-  enableCustomPromptInput: false
+  enableCustomPromptInput: false,
+  aspectRatio: "auto",
+  customAspectRatio: ""
 };
 
 const TEXT_CONTENT = {
@@ -90,6 +92,15 @@ const TEXT_CONTENT = {
     promptLanguageHelp: "The model replies in the selected locale.",
     customPromptToggleLabel: "Enable custom instructions dialog",
     customPromptToggleHelp: "Ask for extra instructions before generating a prompt.",
+    aspectRatioLabel: "Image aspect ratio",
+    aspectRatioHelp: "Pick a target ratio to merge into the generated prompt.",
+    aspectRatioOptionAuto: "Auto-detect",
+    aspectRatioOptionCustom: "Custom…",
+    customAspectRatioLabel: "Custom aspect ratio",
+    customAspectRatioPlaceholder: "e.g. 5:4 or 1024x768",
+    customAspectRatioHint: "Use formats like 5:4 or 1024x768.",
+    customAspectError: "Enter a custom aspect ratio before saving.",
+    customAspectInvalid: "Enter a valid aspect ratio such as 5:4 or 1024x768.",
     filterHeading: "Image Filter",
     filterDescription: "Only show the button on images that meet these minimum dimensions.",
     minWidthLabel: "Minimum width (px)",
@@ -167,6 +178,15 @@ const TEXT_CONTENT = {
     promptLanguageHelp: "模型会按照所选的语言返回提示词。",
     customPromptToggleLabel: "启用自定义指令输入",
     customPromptToggleHelp: "生成前先弹出输入框，让你补充额外说明。",
+    aspectRatioLabel: "图片比例",
+    aspectRatioHelp: "选择要合并到提示词中的目标画面比例。",
+    aspectRatioOptionAuto: "自动",
+    aspectRatioOptionCustom: "自定义…",
+    customAspectRatioLabel: "自定义图片比例",
+    customAspectRatioPlaceholder: "例如 5:4 或 1024x768",
+    customAspectRatioHint: "格式示例：5:4 或 1024x768。",
+    customAspectError: "请选择自定义比例时请填写具体数值。",
+    customAspectInvalid: "请输入合法的图片比例，例如 5:4 或 1024x768。",
     filterHeading: "图片筛选",
     filterDescription: "只在满足最低尺寸的图片上显示按钮。",
     minWidthLabel: "最小宽度（像素）",
@@ -309,6 +329,9 @@ let historyContainer = null;
 let currentView = "settings";
 let viewPanels = [];
 let historyExportButton = null;
+let aspectRatioSelectEl = null;
+let customAspectWrapper = null;
+let customAspectInput = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("options-form");
@@ -333,6 +356,12 @@ document.addEventListener("DOMContentLoaded", () => {
   historyExportButton = historyContainer?.querySelector(
     "[data-action='exportHistory']"
   ) || null;
+  aspectRatioSelectEl = form?.aspectRatio || null;
+  customAspectWrapper = document.querySelector("[data-custom-aspect-wrapper]") || null;
+  customAspectInput = form?.customAspectRatio || null;
+  toggleCustomAspectVisibility(
+    normalizeAspectRatio(aspectRatioSelectEl?.value ?? DEFAULT_CONFIG.aspectRatio) === "custom"
+  );
   providerSelectEl = form?.llmProvider || null;
   providerApiKeyInput = form?.providerApiKey || null;
   providerModelInput = form?.providerModel || null;
@@ -372,6 +401,10 @@ document.addEventListener("DOMContentLoaded", () => {
       selectedPlatformLabel = getPlatformLabelById(selectedPlatformId);
       syncPlatformUrlWithSelection(form);
     });
+  }
+
+  if (aspectRatioSelectEl) {
+    aspectRatioSelectEl.addEventListener("change", handleAspectRatioChange);
   }
 
   if (providerSelectEl) {
@@ -515,6 +548,29 @@ function handleHistoryExportClick() {
   displayStatus(statusNode, translate("historyExported"));
 }
 
+function handleAspectRatioChange(event) {
+  const value = normalizeAspectRatio(event.target.value);
+  if (aspectRatioSelectEl) {
+    aspectRatioSelectEl.value = value;
+  }
+  toggleCustomAspectVisibility(value === "custom");
+}
+
+function toggleCustomAspectVisibility(show) {
+  if (!customAspectWrapper) {
+    return;
+  }
+  const wasHidden = customAspectWrapper.hidden === true;
+  customAspectWrapper.hidden = !show;
+  customAspectWrapper.style.display = show ? "" : "none";
+  if (customAspectInput) {
+    customAspectInput.disabled = !show;
+    if (show && wasHidden) {
+      customAspectInput.focus({ preventScroll: true });
+    }
+  }
+}
+
 function buildHistoryExportRows(entries) {
   const imageCellStyle = "width:120px;height:120px;text-align:center;vertical-align:middle;";
   const header = [
@@ -584,6 +640,22 @@ function escapeForExport(value) {
     .replace(/'/g, "&#39;");
 }
 
+function normalizeAspectRatio(value) {
+  const allowed = new Set([
+    "auto",
+    "21:9",
+    "16:9",
+    "3:2",
+    "4:3",
+    "1:1",
+    "3:4",
+    "2:3",
+    "9:16",
+    "custom"
+  ]);
+  return allowed.has(value) ? value : "auto";
+}
+
 function restoreOptions(form, statusEl) {
   chrome.storage.sync.get(DEFAULT_CONFIG, (items) => {
     if (chrome.runtime.lastError) {
@@ -630,6 +702,14 @@ function restoreOptions(form, statusEl) {
     if (form.autoOpenPlatform) {
       form.autoOpenPlatform.checked = items.autoOpenPlatform !== false;
     }
+    if (aspectRatioSelectEl) {
+      const normalizedRatio = normalizeAspectRatio(items.aspectRatio);
+      aspectRatioSelectEl.value = normalizedRatio;
+      toggleCustomAspectVisibility(normalizedRatio === "custom");
+    }
+    if (customAspectInput) {
+      customAspectInput.value = items.customAspectRatio || DEFAULT_CONFIG.customAspectRatio;
+    }
     if (promptLanguageSelectEl) {
       promptLanguageSelectEl.value = currentPromptLanguageSelection;
     }
@@ -648,6 +728,32 @@ function restoreOptions(form, statusEl) {
 function saveOptions(form, statusEl) {
   persistCurrentProviderInputs(form);
   const providerSettings = cloneProviderSettings(providerSettingsState);
+  const selectedAspectRatio = normalizeAspectRatio(
+    form.aspectRatio?.value ?? DEFAULT_CONFIG.aspectRatio
+  );
+  let customAspectRatio = "";
+  if (selectedAspectRatio === "custom") {
+    const rawValue = form.customAspectRatio?.value ?? "";
+    const trimmedValue = rawValue.trim();
+    if (!trimmedValue) {
+      displayStatus(statusEl, translate("customAspectError"), true);
+      return;
+    }
+    const normalizedCustom = trimmedValue
+      .replace(/\s+/g, "")
+      .replace(/x/gi, ":");
+    if (!/^\d+(?:\.\d+)?:\d+(?:\.\d+)?$/.test(normalizedCustom)) {
+      displayStatus(statusEl, translate("customAspectInvalid"), true);
+      return;
+    }
+    customAspectRatio = normalizedCustom;
+  }
+
+  toggleCustomAspectVisibility(selectedAspectRatio === "custom");
+  if (customAspectInput && selectedAspectRatio === "custom") {
+    customAspectInput.value = customAspectRatio;
+  }
+
   const payload = {
     llmProvider: currentProviderId,
     providerSettings,
@@ -670,6 +776,8 @@ function saveOptions(form, statusEl) {
     ),
     autoOpenPlatform: form.autoOpenPlatform?.checked ?? true,
     enableCustomPromptInput: form.enableCustomPromptInput?.checked ?? false,
+    aspectRatio: selectedAspectRatio,
+    customAspectRatio,
     language: currentLanguage
   };
   currentPromptLanguageSelection = payload.promptLanguage;
@@ -739,6 +847,11 @@ function applyLanguage(lang) {
       el.textContent = translation;
     }
   });
+
+  if (aspectRatioSelectEl) {
+    const currentRatio = normalizeAspectRatio(aspectRatioSelectEl.value);
+    toggleCustomAspectVisibility(currentRatio === "custom");
+  }
 }
 
 function updateLanguageButtons(buttons) {

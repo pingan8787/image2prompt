@@ -95,6 +95,27 @@
               </div>
             </label>
             <label class="options-field">
+              <span data-i18n="aspectRatioLabel"></span>
+              <select name="aspectRatio">
+                <option value="auto" data-i18n="aspectRatioOptionAuto"></option>
+                <option value="21:9">21:9</option>
+                <option value="16:9">16:9</option>
+                <option value="3:2">3:2</option>
+                <option value="4:3">4:3</option>
+                <option value="1:1">1:1</option>
+                <option value="3:4">3:4</option>
+                <option value="2:3">2:3</option>
+                <option value="9:16">9:16</option>
+                <option value="custom" data-i18n="aspectRatioOptionCustom"></option>
+              </select>
+              <small data-i18n="aspectRatioHelp"></small>
+            </label>
+            <label class="options-field" data-custom-aspect-wrapper hidden>
+              <span data-i18n="customAspectRatioLabel"></span>
+              <input type="text" name="customAspectRatio" data-i18n="customAspectRatioPlaceholder" data-i18n-attr="placeholder" disabled />
+              <small data-i18n="customAspectRatioHint"></small>
+            </label>
+            <label class="options-field">
               <span data-i18n="promptLanguageLabel"></span>
               <select name="promptLanguage"></select>
               <small data-i18n="promptLanguageHelp"></small>

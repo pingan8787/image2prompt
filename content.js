@@ -25,7 +25,9 @@ const DEFAULT_CONFIG = {
   selectedPlatformId: "midjourney",
   selectedPlatformLabel: "Midjourney",
   customPlatforms: [],
-  enableCustomPromptInput: false
+  enableCustomPromptInput: false,
+  aspectRatio: "auto",
+  customAspectRatio: ""
 };
 
 const BUTTON_CLASS = "i2p-button";

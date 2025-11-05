@@ -30,6 +30,7 @@ Click it, and the extension will automatically upload the image, generate a prom
 | 🧭 **Internationalized UI** | Easily switch between English and Chinese                                                                            |
 | 🪶 **Lightweight UI**       | Inspired by shadcnUI, built with custom-drawn components and no third-party dependencies                             |
 | 🔓 **Open Source & Free**   | 100% open-source and completely free to use                                                                          |
+| 🧮 **Aspect Ratio Presets** | Pick cinematic ratios or add your own so every prompt respects the frame you need                                    |
 
 ## 🌈 Installation
 

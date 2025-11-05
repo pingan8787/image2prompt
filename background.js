@@ -29,7 +29,9 @@ const DEFAULT_CONFIG = {
   selectedPlatformId: "midjourney",
   selectedPlatformLabel: "Midjourney",
   customPlatforms: [],
-  enableCustomPromptInput: false
+  enableCustomPromptInput: false,
+  aspectRatio: "auto",
+  customAspectRatio: ""
 };
 
 const HISTORY_STORAGE_KEY = "generationHistory";
@@ -182,7 +184,18 @@ async function handleGeneratePrompt(message, sender) {
     typeof message.customInstruction === "string"
       ? message.customInstruction.trim()
       : "";
-  const customInstruction = runtimeInstruction;
+  const aspectInstruction = composeAspectRatioInstruction(
+    config.aspectRatio,
+    config.customAspectRatio
+  );
+  const customInstructionParts = [];
+  if (aspectInstruction) {
+    customInstructionParts.push(aspectInstruction);
+  }
+  if (runtimeInstruction) {
+    customInstructionParts.push(runtimeInstruction);
+  }
+  const customInstruction = customInstructionParts.join("\n\n");
   const model =
     settings.model?.trim() ||
     provider.defaultModel ||
@@ -195,6 +208,9 @@ async function handleGeneratePrompt(message, sender) {
     apiKey: settings.apiKey,
     model,
     instruction,
+    aspectRatio: config.aspectRatio,
+    customAspectRatio: config.customAspectRatio,
+    aspectInstruction,
     customInstruction,
     languageDirective,
     imageBase64: imageData.data,
@@ -216,7 +232,16 @@ async function handleGeneratePrompt(message, sender) {
   if (!trimmedPrompt) {
     throw new Error(`${provider.name} did not return any prompt text.`);
   }
-  const platformUrl = buildPlatformUrl(config.platformUrl, trimmedPrompt);
+  const promptWithAspect = appendAspectRatioToPrompt(
+    trimmedPrompt,
+    config.aspectRatio,
+    config.customAspectRatio
+  );
+  const normalizedPrompt = promptWithAspect.trim();
+  if (!normalizedPrompt) {
+    throw new Error(`${provider.name} did not return any prompt text.`);
+  }
+  const platformUrl = buildPlatformUrl(config.platformUrl, normalizedPrompt);
   const shouldAutoOpen = config.autoOpenPlatform !== false;
   let autoOpened = false;
 
@@ -230,7 +255,7 @@ async function handleGeneratePrompt(message, sender) {
   }
 
   appendGenerationHistorySafe({
-    prompt: trimmedPrompt,
+    prompt: normalizedPrompt,
     provider: provider.name,
     providerId,
     model,
@@ -243,7 +268,7 @@ async function handleGeneratePrompt(message, sender) {
     customInstruction
   });
 
-  return { prompt: trimmedPrompt, platformUrl, autoOpened };
+  return { prompt: normalizedPrompt, platformUrl, autoOpened };
 }
 
 async function getConfig() {
@@ -691,7 +716,79 @@ function sanitizeConfig(raw) {
   merged.zhipuApiKey = providerSettings.zhipu.apiKey;
   merged.zhipuModel = providerSettings.zhipu.model;
   merged.enableCustomPromptInput = merged.enableCustomPromptInput === true;
+  merged.aspectRatio = normalizeAspectRatio(raw?.aspectRatio);
+  merged.customAspectRatio = merged.aspectRatio === "custom"
+    ? sanitizeAspectRatio(raw?.customAspectRatio)
+    : "";
   return merged;
+}
+
+function normalizeAspectRatio(value) {
+  const allowed = new Set([
+    "auto",
+    "21:9",
+    "16:9",
+    "3:2",
+    "4:3",
+    "1:1",
+    "3:4",
+    "2:3",
+    "9:16",
+    "custom"
+  ]);
+  if (typeof value !== "string") {
+    return DEFAULT_CONFIG.aspectRatio;
+  }
+  return allowed.has(value) ? value : DEFAULT_CONFIG.aspectRatio;
+}
+
+function sanitizeAspectRatio(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+  const normalized = trimmed.replace(/\s+/g, "").replace(/x/gi, ":");
+  if (/^\d+(?:\.\d+)?:\d+(?:\.\d+)?$/.test(normalized)) {
+    return normalized;
+  }
+  return "";
+}
+
+function composeAspectRatioInstruction(aspectRatio, customAspectRatio) {
+  const normalized = normalizeAspectRatio(aspectRatio);
+  if (normalized === "auto") {
+    return "";
+  }
+  const ratioValue = normalized === "custom"
+    ? sanitizeAspectRatio(customAspectRatio)
+    : normalized;
+  if (!ratioValue) {
+    return "";
+  }
+  return `Please ensure the generated image matches an aspect ratio of ${ratioValue}.`;
+}
+
+function appendAspectRatioToPrompt(prompt, aspectRatio, customAspectRatio) {
+  const normalized = normalizeAspectRatio(aspectRatio);
+  if (normalized === "auto") {
+    return prompt;
+  }
+  const ratioValue = normalized === "custom"
+    ? sanitizeAspectRatio(customAspectRatio)
+    : normalized;
+  if (!ratioValue) {
+    return prompt;
+  }
+  const lowerPrompt = prompt.toLowerCase();
+  const ratioLower = ratioValue.toLowerCase();
+  const ratioWithX = ratioLower.replace(":", "x");
+  if (lowerPrompt.includes(ratioLower) || lowerPrompt.includes(ratioWithX)) {
+    return prompt;
+  }
+  return `${prompt}\n\nAspect ratio: ${ratioValue}`;
 }
 
 function sanitizeProviderSettings(raw, legacySource = {}) {

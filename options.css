@@ -948,3 +948,10 @@ body {
     color: rgba(226, 232, 240, 0.75);
   }
 }
+.options-field[data-custom-aspect-wrapper] {
+  display: none;
+}
+
+.options-field[data-custom-aspect-wrapper]:not([hidden]) {
+  display: flex;
+}

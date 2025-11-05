@@ -26,6 +26,7 @@ Click it, and the extension will automatically upload the image, generate a prom
 | 📒 **Generation History**   | View all your generated prompts anytime                                                                              |
 | 🎨 **Custom Platform Jump** | Configure the default AI platform: OpenAI / Gemini / StableDiffusion / JiMeng / Keling / Doubao / Hailuo AI / Custom |
 | 💬 **Prompt Templates**     | Edit and customize prompt generation templates to build your unique style                                            |
+| ✍️ **Custom Instructions**  | Enable a pre-generation dialog so you can blend extra guidance into every output                                      |
 | 🧭 **Internationalized UI** | Easily switch between English and Chinese                                                                            |
 | 🪶 **Lightweight UI**       | Inspired by shadcnUI, built with custom-drawn components and no third-party dependencies                             |
 | 🔓 **Open Source & Free**   | 100% open-source and completely free to use                                                                          |
@@ -56,5 +57,7 @@ After installing the extension, open the configuration page to choose your provi
 ![Setting](https://github.com/user-attachments/assets/1fa8451f-e06b-4c75-b99c-695f4aafe7fc)
 
 Then, whenever you hover over an image on any webpage, you’ll see an “Edit” button at the bottom-right corner — click it to generate a prompt!
+
+Want to blend in extra guidance (for example, “switch the background to a neon city”)? Enable **Custom instructions input** in **Settings → Prompt Generation** to open a dialog before each run and merge your tweaks with the system prompt.
 
 ![Project](https://github.com/user-attachments/assets/905995c7-bdb6-4c8f-b70d-44b24684c99d)

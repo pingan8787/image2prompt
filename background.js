@@ -28,7 +28,8 @@ const DEFAULT_CONFIG = {
   autoOpenPlatform: true,
   selectedPlatformId: "midjourney",
   selectedPlatformLabel: "Midjourney",
-  customPlatforms: []
+  customPlatforms: [],
+  enableCustomPromptInput: false
 };
 
 const HISTORY_STORAGE_KEY = "generationHistory";
@@ -177,6 +178,11 @@ async function handleGeneratePrompt(message, sender) {
   const imageData = await getImageDataFromMessage(message);
   const languageDirective = getLanguageDirective(config.promptLanguage);
   const instruction = config.promptInstruction || DEFAULT_CONFIG.promptInstruction;
+  const runtimeInstruction =
+    typeof message.customInstruction === "string"
+      ? message.customInstruction.trim()
+      : "";
+  const customInstruction = runtimeInstruction;
   const model =
     settings.model?.trim() ||
     provider.defaultModel ||
@@ -189,6 +195,7 @@ async function handleGeneratePrompt(message, sender) {
     apiKey: settings.apiKey,
     model,
     instruction,
+    customInstruction,
     languageDirective,
     imageBase64: imageData.data,
     imageMimeType: imageData.mimeType,
@@ -199,6 +206,7 @@ async function handleGeneratePrompt(message, sender) {
     model,
     instruction,
     languageDirective,
+    customInstruction,
     imageBase64: imageData.data,
     imageMimeType: imageData.mimeType,
     altText: message.imageAlt || ""
@@ -231,7 +239,8 @@ async function handleGeneratePrompt(message, sender) {
     platformId: config.selectedPlatformId || "",
     platformUrl: config.platformUrl || "",
     imageDataUrl: buildDataUrl(imageData?.mimeType, imageData?.data),
-    imageAlt: message.imageAlt || ""
+    imageAlt: message.imageAlt || "",
+    customInstruction
   });
 
   return { prompt: trimmedPrompt, platformUrl, autoOpened };
@@ -288,6 +297,7 @@ async function requestPromptFromGemini({
   apiKey,
   model,
   instruction,
+  customInstruction,
   languageDirective,
   imageBase64,
   imageMimeType,
@@ -301,6 +311,7 @@ async function requestPromptFromGemini({
 
   const trimmedInstruction = instruction?.trim() ?? "";
   const trimmedDirective = languageDirective?.trim() ?? "";
+  const trimmedCustomInstruction = customInstruction?.trim() ?? "";
 
   if (trimmedInstruction) {
     parts.push({ text: trimmedInstruction });
@@ -308,6 +319,12 @@ async function requestPromptFromGemini({
 
   if (trimmedDirective) {
     parts.push({ text: trimmedDirective });
+  }
+
+  if (trimmedCustomInstruction) {
+    parts.push({
+      text: `Additional user instructions to combine with the image: ${trimmedCustomInstruction}`
+    });
   }
 
   parts.push({
@@ -372,6 +389,7 @@ async function requestPromptFromZhipu({
   apiKey,
   model,
   instruction,
+  customInstruction,
   languageDirective,
   imageBase64,
   imageMimeType,
@@ -381,6 +399,7 @@ async function requestPromptFromZhipu({
   const textSegments = [];
   const trimmedInstruction = instruction?.trim() ?? "";
   const trimmedDirective = languageDirective?.trim() ?? "";
+  const trimmedCustomInstruction = customInstruction?.trim() ?? "";
 
   if (trimmedInstruction) {
     textSegments.push(trimmedInstruction);
@@ -390,6 +409,11 @@ async function requestPromptFromZhipu({
   }
   if (altText) {
     textSegments.push(`Image alt text: ${altText}`);
+  }
+  if (trimmedCustomInstruction) {
+    textSegments.push(
+      `Additional user instructions to blend with the final prompt:\n${trimmedCustomInstruction}`
+    );
   }
 
   const content = [];
@@ -612,7 +636,10 @@ function sanitizeHistoryEntry(entry) {
     platformUrl: entry.platformUrl || "",
     imageDataUrl: entry.imageDataUrl || "",
     imageAlt: entry.imageAlt || "",
-    createdAt: Number(entry.createdAt) || Date.now()
+    createdAt: Number(entry.createdAt) || Date.now(),
+    customInstruction: entry.customInstruction
+      ? String(entry.customInstruction)
+      : ""
   };
 }
 
@@ -663,6 +690,7 @@ function sanitizeConfig(raw) {
   merged.model = providerSettings.gemini.model;
   merged.zhipuApiKey = providerSettings.zhipu.apiKey;
   merged.zhipuModel = providerSettings.zhipu.model;
+  merged.enableCustomPromptInput = merged.enableCustomPromptInput === true;
   return merged;
 }
 

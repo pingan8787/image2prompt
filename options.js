@@ -54,7 +54,8 @@ const DEFAULT_CONFIG = {
   autoOpenPlatform: true,
   selectedPlatformId: "midjourney",
   selectedPlatformLabel: "Midjourney",
-  customPlatforms: []
+  customPlatforms: [],
+  enableCustomPromptInput: false
 };
 
 const TEXT_CONTENT = {
@@ -72,7 +73,7 @@ const TEXT_CONTENT = {
     providerGeminiLink: "👉 Create Gemini API Key",
     providerZhipuLabel: "Zhipu AI",
     providerZhipuDescription: "Use Zhipu's multimodal models to extract prompts from images.",
-    providerZhipuLink: "👉 Manage Zhipu API Keys",
+    providerZhipuLink: "👉 Create Zhipu API Key",
     apiKeyLabel: "API key",
     apiKeyPlaceholderGemini: "Paste your Gemini API key",
     apiKeyPlaceholderZhipu: "Paste your Zhipu API key",
@@ -82,11 +83,13 @@ const TEXT_CONTENT = {
     modelPlaceholderGemini: "gemini-2.5-flash",
     modelPlaceholderZhipu: "glm-4v-plus",
     promptHeading: "Prompt Generation",
-    promptDescription: "Tune the instruction sent to the model.",
-    instructionLabel: "Instruction prompt",
-    instructionPlaceholder: "Describe how the model should craft the text-to-image prompt.",
+    promptDescription: "Tune the guidance sent to the model.",
+    instructionLabel: "System prompt",
+    instructionPlaceholder: "Describe the base rules the model should follow for every prompt.",
     promptLanguageLabel: "Prompt language",
     promptLanguageHelp: "The model replies in the selected locale.",
+    customPromptToggleLabel: "Enable custom instructions dialog",
+    customPromptToggleHelp: "Ask for extra instructions before generating a prompt.",
     filterHeading: "Image Filter",
     filterDescription: "Only show the button on images that meet these minimum dimensions.",
     minWidthLabel: "Minimum width (px)",
@@ -122,6 +125,9 @@ const TEXT_CONTENT = {
     historyModelLabel: "Model",
     historyPlatformLabel: "Platform",
     historyImageAlt: "Generated image preview",
+    historyCustomInstructionLabel: "Custom instructions",
+    tabSettings: "Settings",
+    tabHistory: "History",
     saveButton: "Save settings",
     statusSaved: "Settings saved.",
     statusLanguageError: "Unable to sync language preference."
@@ -140,7 +146,7 @@ const TEXT_CONTENT = {
     providerGeminiLink: "👉 创建 Gemini API Key",
     providerZhipuLabel: "智谱 AI",
     providerZhipuDescription: "使用智谱多模态模型从图片中提炼提示词。",
-    providerZhipuLink: "👉 前往智谱控制台",
+    providerZhipuLink: "👉 创建智谱 API Key",
     apiKeyLabel: "API 密钥",
     apiKeyPlaceholderGemini: "粘贴你的 Gemini API key",
     apiKeyPlaceholderZhipu: "粘贴你的智谱 API key",
@@ -150,11 +156,13 @@ const TEXT_CONTENT = {
     modelPlaceholderGemini: "gemini-2.5-flash",
     modelPlaceholderZhipu: "glm-4v-plus",
     promptHeading: "提示词生成",
-    promptDescription: "自定义发送给模型的说明。",
-    instructionLabel: "说明提示词",
-    instructionPlaceholder: "描述你希望模型如何编写这段提示词。",
+    promptDescription: "自定义发送给模型的整体指导。",
+    instructionLabel: "系统提示词",
+    instructionPlaceholder: "描述模型在每次生成时都需要遵守的规则或风格。",
     promptLanguageLabel: "生成语言",
     promptLanguageHelp: "模型会按照所选的语言返回提示词。",
+    customPromptToggleLabel: "启用自定义指令输入",
+    customPromptToggleHelp: "生成前先弹出输入框，让你补充额外说明。",
     filterHeading: "图片筛选",
     filterDescription: "只在满足最低尺寸的图片上显示按钮。",
     minWidthLabel: "最小宽度（像素）",
@@ -190,6 +198,9 @@ const TEXT_CONTENT = {
     historyModelLabel: "模型",
     historyPlatformLabel: "平台",
     historyImageAlt: "生成图像预览",
+    historyCustomInstructionLabel: "自定义说明",
+    tabSettings: "设置",
+    tabHistory: "生成历史",
     saveButton: "保存设置",
     statusSaved: "设置已保存。",
     statusLanguageError: "无法同步语言偏好。"
@@ -264,7 +275,10 @@ let providerSelectEl = null;
 let providerApiKeyInput = null;
 let providerModelInput = null;
 let providerApiKeyHelpEl = null;
-let providerInfoSections = new Map();
+let providerInfoContainer = null;
+let providerInfoDescriptionEl = null;
+let providerInfoPrimaryLink = null;
+let providerInfoPrimaryLabel = null;
 let platformSelectEl = null;
 let customListEl = null;
 let customEmptyEl = null;
@@ -282,6 +296,10 @@ const HISTORY_STORAGE_KEY = "generationHistory";
 let generationHistoryState = [];
 let historyListEl = null;
 let historyEmptyEl = null;
+let tabButtons = [];
+let historyContainer = null;
+let currentView = "settings";
+let viewPanels = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("options-form");
@@ -300,16 +318,32 @@ document.addEventListener("DOMContentLoaded", () => {
   customAddButton = document.querySelector(".platform-custom__add");
   historyListEl = document.querySelector(".history-list");
   historyEmptyEl = document.querySelector(".history-empty");
+  tabButtons = Array.from(document.querySelectorAll(".options-tab"));
+  historyContainer = document.querySelector(".options-history");
+  viewPanels = Array.from(document.querySelectorAll("[data-view-panel]"));
   providerSelectEl = form?.llmProvider || null;
   providerApiKeyInput = form?.providerApiKey || null;
   providerModelInput = form?.providerModel || null;
   providerApiKeyHelpEl = document.querySelector("[data-provider-help='apiKey']");
-  providerInfoSections = new Map();
-  document.querySelectorAll("[data-provider-info]").forEach((node) => {
-    const providerId = node.dataset.providerInfo;
-    if (providerId) {
-      providerInfoSections.set(providerId, node);
-    }
+  providerInfoContainer = document.querySelector("[data-provider-info]") || null;
+  providerInfoDescriptionEl = providerInfoContainer?.querySelector(
+    ".provider-info__description"
+  ) || null;
+  providerInfoPrimaryLink = providerInfoContainer?.querySelector(
+    ".provider-info__link"
+  ) || null;
+  providerInfoPrimaryLabel = providerInfoPrimaryLink?.querySelector(
+    ".provider-info__label"
+  ) || null;
+  const sidebarLinks = Array.from(
+    document.querySelectorAll(".sidebar-nav a")
+  );
+  sidebarLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      if (currentView !== "settings") {
+        switchView("settings");
+      }
+    });
   });
 
   promptLanguageSelectEl = form?.promptLanguage || null;
@@ -333,13 +367,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const nextProvider = normalizeProviderId(event.target.value);
       persistCurrentProviderInputs(form);
       if (nextProvider === currentProviderId) {
-        updateProviderInfoVisibility();
+        updateProviderInfoContent();
         updateProviderFieldPlaceholders();
         return;
       }
       currentProviderId = nextProvider;
       syncProviderInputs(form);
-      updateProviderInfoVisibility();
+      updateProviderInfoContent();
       updateProviderFieldPlaceholders();
     });
   }
@@ -349,6 +383,13 @@ document.addEventListener("DOMContentLoaded", () => {
       handleAddCustomPlatform(form, statusEl);
     });
   }
+
+  tabButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const targetView = button.dataset.view || "settings";
+      switchView(targetView);
+    });
+  });
 
   if (historyListEl) {
     historyListEl.addEventListener("click", handleHistoryListClick);
@@ -360,6 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   restoreOptions(form, statusEl);
   loadGenerationHistory();
+  switchView(currentView);
 
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== "local") {
@@ -405,6 +447,21 @@ function persistLanguage(statusEl) {
       displayStatus(statusEl, translate("statusLanguageError"), true);
     }
   });
+}
+
+function switchView(nextView) {
+  const normalized = nextView === "history" ? "history" : "settings";
+  currentView = normalized;
+  tabButtons.forEach((button) => {
+    button.classList.toggle("is-active", (button.dataset.view || "settings") === normalized);
+  });
+  viewPanels.forEach((panel) => {
+    const panelView = panel.dataset.viewPanel || "settings";
+    panel.hidden = panelView !== normalized;
+  });
+  if (normalized === "history") {
+    renderHistory();
+  }
 }
 
 function restoreOptions(form, statusEl) {
@@ -453,11 +510,10 @@ function restoreOptions(form, statusEl) {
     if (form.autoOpenPlatform) {
       form.autoOpenPlatform.checked = items.autoOpenPlatform !== false;
     }
-
     if (promptLanguageSelectEl) {
       promptLanguageSelectEl.value = currentPromptLanguageSelection;
     }
-    updateProviderInfoVisibility();
+    updateProviderInfoContent();
     updateProviderFieldPlaceholders();
     renderCustomPlatforms();
     renderPlatformOptions();
@@ -465,6 +521,7 @@ function restoreOptions(form, statusEl) {
       platformSelectEl.value = normalizePlatformId(selectedPlatformId);
     }
     syncPlatformUrlWithSelection(form, { preserveExisting: true });
+    switchView(currentView);
   });
 }
 
@@ -492,6 +549,7 @@ function saveOptions(form, statusEl) {
       form.promptLanguage?.value ?? DEFAULT_CONFIG.promptLanguage
     ),
     autoOpenPlatform: form.autoOpenPlatform?.checked ?? true,
+    enableCustomPromptInput: form.enableCustomPromptInput?.checked ?? false,
     language: currentLanguage
   };
   currentPromptLanguageSelection = payload.promptLanguage;
@@ -543,7 +601,7 @@ function applyLanguage(lang) {
   renderPlatformOptions();
   syncPlatformUrlWithSelection(formEl, { preserveExisting: true });
   renderHistory();
-  updateProviderInfoVisibility();
+  updateProviderInfoContent();
   updateProviderFieldPlaceholders();
 
   const elements = document.querySelectorAll("[data-i18n]");
@@ -718,17 +776,33 @@ function persistCurrentProviderInputs(form) {
   providerSettingsState[currentProviderId] = { ...entry };
 }
 
-function updateProviderInfoVisibility() {
-  if (!providerInfoSections || providerInfoSections.size === 0) {
+function updateProviderInfoContent() {
+  if (!providerInfoContainer) {
     return;
   }
-  const activeId = normalizeProviderId(currentProviderId);
-  providerInfoSections.forEach((node, providerId) => {
-    if (!node) {
-      return;
+  const descriptor = getProviderDescriptor(currentProviderId);
+  if (!descriptor) {
+    providerInfoContainer.hidden = true;
+    return;
+  }
+
+  providerInfoContainer.hidden = false;
+
+  if (providerInfoDescriptionEl) {
+    providerInfoDescriptionEl.textContent = translate(descriptor.descriptionKey);
+  }
+
+  if (providerInfoPrimaryLink && providerInfoPrimaryLabel) {
+    const linkHref = descriptor.keyLink || "";
+    const labelKey = descriptor.keyLinkLabelKey;
+    if (linkHref && labelKey) {
+      providerInfoPrimaryLink.href = linkHref;
+      providerInfoPrimaryLabel.textContent = translate(labelKey);
+      providerInfoPrimaryLink.hidden = false;
+    } else {
+      providerInfoPrimaryLink.hidden = true;
     }
-    node.hidden = normalizeProviderId(providerId) !== activeId;
-  });
+  }
 }
 
 function updateProviderFieldPlaceholders() {
@@ -970,6 +1044,24 @@ function buildHistoryEntryNode(entry) {
   meta.appendChild(modelSpan);
   meta.appendChild(platformSpan);
 
+  body.appendChild(meta);
+
+  const customInstruction = entry.customInstruction
+    ? String(entry.customInstruction).trim()
+    : "";
+  if (customInstruction) {
+    const custom = document.createElement("div");
+    custom.className = "history-entry__custom";
+    const label = document.createElement("span");
+    label.className = "history-entry__custom-label";
+    label.textContent = `${translate("historyCustomInstructionLabel")}: `;
+    const text = document.createElement("span");
+    text.textContent = customInstruction;
+    custom.appendChild(label);
+    custom.appendChild(text);
+    body.appendChild(custom);
+  }
+
   const prompt = document.createElement("div");
   prompt.className = "history-entry__prompt";
   prompt.textContent = entry.prompt || "";
@@ -992,7 +1084,6 @@ function buildHistoryEntryNode(entry) {
   actions.appendChild(copyButton);
   actions.appendChild(deleteButton);
 
-  body.appendChild(meta);
   body.appendChild(prompt);
   body.appendChild(actions);
 
@@ -1118,7 +1209,11 @@ function normalizeHistoryEntry(entry) {
     platformUrl: entry.platformUrl || "",
     imageDataUrl: typeof entry.imageDataUrl === "string" ? entry.imageDataUrl : "",
     imageAlt: entry.imageAlt || "",
-    createdAt: Number(entry.createdAt) || Date.now()
+    createdAt: Number(entry.createdAt) || Date.now(),
+    customInstruction:
+      typeof entry.customInstruction === "string"
+        ? entry.customInstruction
+        : ""
   };
 }
 

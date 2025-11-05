@@ -24,18 +24,30 @@ const DEFAULT_CONFIG = {
   autoOpenPlatform: true,
   selectedPlatformId: "midjourney",
   selectedPlatformLabel: "Midjourney",
-  customPlatforms: []
+  customPlatforms: [],
+  enableCustomPromptInput: false
 };
 
 const BUTTON_CLASS = "i2p-button";
 const OVERLAY_CLASS = "i2p-overlay";
 const DATASET_KEY = "i2pTracked";
 const BUTTON_ICON = "✎";
+const CUSTOM_DIALOG_BACKDROP_CLASS = "i2p-dialog-backdrop";
+const CUSTOM_DIALOG_CLASS = "i2p-dialog";
 
 const UI_STRINGS = {
   en: {
     buttonTooltip: "Generate prompt",
     buttonAria: "Generate prompt",
+    customButtonTooltip: "Customize prompt",
+    customButtonAria: "Customize prompt before generating",
+    customInputTitle: "Add custom instructions",
+    customInputDescription:
+      "Optional: add per-image tweaks before the model crafts the prompt.",
+    customInputPlaceholder:
+      "Example: Replace the background with a neon-lit city skyline.",
+    customInputConfirm: "Generate prompt",
+    customInputCancel: "Cancel",
     toastPlatformOpened: "Prompt ready. Opened your configured AI platform in a new tab.",
     toastPlatformManual: "Prompt ready. Use the button below to open your configured AI platform.",
     toastCopiedAuto: "Prompt copied to clipboard.",
@@ -52,6 +64,13 @@ const UI_STRINGS = {
   zh: {
     buttonTooltip: "生成提示词",
     buttonAria: "生成提示词",
+    customButtonTooltip: "自定义后生成",
+    customButtonAria: "生成前先填写自定义说明",
+    customInputTitle: "补充自定义说明",
+    customInputDescription: "（可选）填写本次生成的额外需求，再交给模型生成提示词。",
+    customInputPlaceholder: "示例：把背景改成赛博朋克风格的霓虹城市。",
+    customInputConfirm: "生成提示词",
+    customInputCancel: "取消",
     toastPlatformOpened: "提示词已就绪，并在新标签页打开了配置的 AI 平台。",
     toastPlatformManual: "提示词已就绪，点击下方按钮即可打开配置的 AI 平台。",
     toastCopiedAuto: "提示词已复制到剪贴板。",
@@ -110,6 +129,9 @@ function watchForConfigChanges() {
         shouldReevaluate = true;
       }
       if (key === "language") {
+        shouldUpdateLabels = true;
+      }
+      if (key === "enableCustomPromptInput") {
         shouldUpdateLabels = true;
       }
     }
@@ -344,6 +366,15 @@ async function triggerPrompt(button, img) {
     return;
   }
 
+  let customInstruction = "";
+  if (config.enableCustomPromptInput) {
+    const dialogResult = await promptForCustomInstruction();
+    if (dialogResult === null) {
+      return;
+    }
+    customInstruction = dialogResult;
+  }
+
   button.dataset.loading = "true";
   button.disabled = true;
   button.classList.add("is-loading");
@@ -359,7 +390,8 @@ async function triggerPrompt(button, img) {
             imageMimeType: imagePayload.mimeType,
             imageBase64: imagePayload.base64
           }
-        : {})
+        : {}),
+      customInstruction
     });
 
     if (!response?.success) {
@@ -547,6 +579,104 @@ async function tryCopyToClipboard(text) {
   }
 }
 
+function promptForCustomInstruction() {
+  return new Promise((resolve) => {
+    const existing = document.querySelector(`.${CUSTOM_DIALOG_BACKDROP_CLASS}`);
+    if (existing) {
+      existing.remove();
+    }
+
+    const backdrop = document.createElement("div");
+    backdrop.className = CUSTOM_DIALOG_BACKDROP_CLASS;
+
+    const dialog = document.createElement("div");
+    dialog.className = CUSTOM_DIALOG_CLASS;
+
+    const title = document.createElement("h3");
+    title.className = "i2p-dialog__title";
+    title.textContent = getUiString("customInputTitle");
+
+    const description = document.createElement("p");
+    description.className = "i2p-dialog__description";
+    description.textContent = getUiString("customInputDescription");
+
+    const textarea = document.createElement("textarea");
+    textarea.className = "i2p-dialog__textarea";
+    textarea.placeholder = getUiString("customInputPlaceholder");
+    textarea.setAttribute("aria-label", getUiString("customInputTitle"));
+
+    const actions = document.createElement("div");
+    actions.className = "i2p-dialog__actions";
+
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.className =
+      "i2p-dialog__button i2p-dialog__button--secondary";
+    cancelButton.textContent = getUiString("customInputCancel");
+
+    const confirmButton = document.createElement("button");
+    confirmButton.type = "button";
+    confirmButton.className =
+      "i2p-dialog__button i2p-dialog__button--primary";
+    confirmButton.textContent = getUiString("customInputConfirm");
+
+    actions.append(cancelButton, confirmButton);
+
+    dialog.append(title, description, textarea, actions);
+    backdrop.appendChild(dialog);
+
+    const cleanup = (value) => {
+      document.removeEventListener("keydown", handleKeydown, true);
+      backdrop.remove();
+      resolve(value);
+    };
+
+    const submit = () => cleanup(textarea.value.trim());
+    const cancel = () => cleanup(null);
+
+    const handleKeydown = (event) => {
+      if (!dialog.contains(event.target)) {
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        cancel();
+      }
+      if (
+        event.key === "Enter" &&
+        (event.metaKey || event.ctrlKey) &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        submit();
+      }
+    };
+
+    backdrop.addEventListener("click", (event) => {
+      if (event.target === backdrop) {
+        cancel();
+      }
+    });
+    cancelButton.addEventListener("click", cancel);
+    confirmButton.addEventListener("click", submit);
+
+    const host = document.body || document.documentElement;
+    if (!host) {
+      resolve(null);
+      return;
+    }
+
+    document.addEventListener("keydown", handleKeydown, true);
+    host.appendChild(backdrop);
+
+    requestAnimationFrame(() => {
+      textarea.focus();
+    });
+  });
+}
+
 function updateAllButtonLabels() {
   document
     .querySelectorAll(`.${BUTTON_CLASS}`)
@@ -557,8 +687,12 @@ function applyButtonLabels(button) {
   if (!button) {
     return;
   }
-  const tooltip = getUiString("buttonTooltip");
-  const ariaLabel = getUiString("buttonAria");
+  const tooltip = config.enableCustomPromptInput
+    ? getUiString("customButtonTooltip")
+    : getUiString("buttonTooltip");
+  const ariaLabel = config.enableCustomPromptInput
+    ? getUiString("customButtonAria")
+    : getUiString("buttonAria");
   button.title = tooltip;
   button.setAttribute("aria-label", ariaLabel);
   if (!button.classList.contains("is-loading")) {

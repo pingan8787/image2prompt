@@ -20,7 +20,6 @@
           <a href="#section-prompt" class="sidebar-link" data-i18n="promptHeading"></a>
           <a href="#section-filter" class="sidebar-link" data-i18n="filterHeading"></a>
           <a href="#section-platform" class="sidebar-link" data-i18n="platformHeading"></a>
-          <a href="#section-history" class="sidebar-link" data-i18n="historyHeading"></a>
         </nav>
         <div class="sidebar-language">
           <span class="language-switch__label" data-i18n="languageLabel"></span>
@@ -37,13 +36,18 @@
           <a class="sidebar-github" href="https://github.com/pingan8787/image2prompt" target="_blank"
             rel="noopener noreferrer" data-i18n="githubCta"></a>
           <div class="version">
-            v0.1.1
+            v0.1.2
           </div>
         </div>
       </aside>
 
       <section class="options-card">
-        <form id="options-form" class="options-form">
+        <div class="options-card__tabs">
+          <button type="button" class="options-tab is-active" data-view="settings" data-i18n="tabSettings"></button>
+          <button type="button" class="options-tab" data-view="history" data-i18n="tabHistory"></button>
+        </div>
+
+        <form id="options-form" class="options-form" data-view-panel="settings">
           <section class="options-section" id="section-llm">
             <div class="options-section__heading">
               <h2 data-i18n="llmHeading"></h2>
@@ -54,17 +58,9 @@
               <select name="llmProvider"></select>
               <small data-i18n="llmProviderHelp"></small>
             </label>
-            <div class="options-section__key provider-info" data-provider-info="gemini">
-              <p data-i18n="providerGeminiDescription"></p>
-              <a href="https://aistudio.google.com/app/api-keys" target="_blank" rel="noopener noreferrer">
-                <span data-i18n="providerGeminiLink"></span>
-              </a>
-            </div>
-            <div class="options-section__key provider-info" data-provider-info="zhipu" hidden>
-              <p data-i18n="providerZhipuDescription"></p>
-              <a href="https://docs.bigmodel.cn/cn/guide/start/model-overview" target="_blank"
-                rel="noopener noreferrer">
-                <span data-i18n="providerZhipuLink"></span>
+            <div class="options-section__key provider-info" data-provider-info>
+              <a class="provider-info__link" href="#" target="_blank" rel="noopener noreferrer">
+                <span class="provider-info__label"></span>
               </a>
             </div>
             <label class="options-field">
@@ -87,6 +83,16 @@
               <span data-i18n="instructionLabel"></span>
               <textarea name="promptInstruction" rows="4" data-i18n="instructionPlaceholder"
                 data-i18n-attr="placeholder"></textarea>
+            </label>
+            <label class="options-toggle">
+              <input type="checkbox" name="enableCustomPromptInput" />
+              <div class="options-toggle__visual" aria-hidden="true">
+                <div class="options-toggle__thumb"></div>
+              </div>
+              <div class="options-toggle__content">
+                <span class="options-toggle__label" data-i18n="customPromptToggleLabel"></span>
+                <small class="options-toggle__help" data-i18n="customPromptToggleHelp"></small>
+              </div>
             </label>
             <label class="options-field">
               <span data-i18n="promptLanguageLabel"></span>
@@ -151,20 +157,20 @@
             </label>
           </section>
 
-          <section class="options-section" id="section-history">
-            <div class="options-section__heading">
-              <h2 data-i18n="historyHeading"></h2>
-              <p data-i18n="historyDescription"></p>
-            </div>
-            <p class="history-empty" data-i18n="historyEmpty"></p>
-            <ul class="history-list"></ul>
-          </section>
-
           <div class="options-actions">
             <button type="submit" class="options-submit" data-i18n="saveButton"></button>
             <span id="options-status" class="options-status" role="status"></span>
           </div>
         </form>
+
+        <section class="options-history" data-view-panel="history" hidden>
+          <div class="options-history__heading">
+            <h2 data-i18n="historyHeading"></h2>
+            <p data-i18n="historyDescription"></p>
+          </div>
+          <p class="history-empty" data-i18n="historyEmpty"></p>
+          <ul class="history-list"></ul>
+        </section>
       </section>
     </div>
   </main>

@@ -123,6 +123,142 @@
   background: rgba(176, 0, 32, 0.92);
 }
 
+.i2p-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 2147483647;
+}
+
+.i2p-dialog {
+  width: min(420px, calc(100% - 32px));
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.22);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .i2p-dialog {
+    background: rgba(15, 23, 42, 0.92);
+    color: #f8fafc;
+    box-shadow: 0 24px 48px rgba(2, 6, 23, 0.55);
+  }
+}
+
+.i2p-dialog__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.i2p-dialog__description {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(15, 23, 42, 0.7);
+}
+
+@media (prefers-color-scheme: dark) {
+  .i2p-dialog__description {
+    color: rgba(226, 232, 240, 0.72);
+  }
+}
+
+.i2p-dialog__textarea {
+  width: auto;
+  min-height: 120px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  padding: 12px;
+  resize: vertical;
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+  color: inherit;
+  background: rgba(248, 250, 252, 0.95);
+}
+
+.i2p-dialog__textarea:focus {
+  outline: 2px solid rgba(59, 130, 246, 0.6);
+  outline-offset: 1px;
+  background: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .i2p-dialog__textarea {
+    background: rgba(30, 41, 59, 0.85);
+    border-color: rgba(148, 163, 184, 0.35);
+  }
+
+  .i2p-dialog__textarea:focus {
+    background: rgba(15, 23, 42, 0.95);
+  }
+}
+
+.i2p-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.i2p-dialog__button {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  font-weight: 600;
+}
+
+.i2p-dialog__button--secondary {
+  background: rgba(148, 163, 184, 0.16);
+  color: inherit;
+}
+
+.i2p-dialog__button--secondary:hover,
+.i2p-dialog__button--secondary:focus-visible {
+  background: rgba(148, 163, 184, 0.28);
+  outline: none;
+}
+
+.i2p-dialog__button--primary {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.28);
+}
+
+.i2p-dialog__button--primary:hover,
+.i2p-dialog__button--primary:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.32);
+  outline: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .i2p-dialog__button--primary {
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color: #0f172a;
+    box-shadow: 0 12px 26px rgba(14, 165, 233, 0.3);
+  }
+
+  .i2p-dialog__button--primary:hover,
+  .i2p-dialog__button--primary:focus-visible {
+    box-shadow: 0 16px 32px rgba(14, 165, 233, 0.36);
+  }
+}
+
 @keyframes i2p-toast-in {
   from {
     opacity: 0;

@@ -327,9 +327,44 @@ body {
   color: rgba(15, 23, 42, 0.68);
 }
 
+.history-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.history-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.history-export:hover,
+.history-export:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+  outline: none;
+}
+
 @media (prefers-color-scheme: dark) {
   .options-history__heading p {
     color: rgba(226, 232, 240, 0.72);
+  }
+
+  .history-export {
+    border-color: rgba(56, 189, 248, 0.4);
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color: #0f172a;
   }
 }
 

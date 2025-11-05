@@ -120,6 +120,10 @@ const TEXT_CONTENT = {
     historyDeleteButton: "Delete",
     historyCopied: "Prompt copied to clipboard.",
     historyDeleted: "History entry removed.",
+    historyExportButton: "Export to Excel",
+    historyExported: "History exported.",
+    historyPromptLabel: "Prompt",
+    historyImageColumnLabel: "Image",
     historyTimeLabel: "Generated",
     historyProviderLabel: "Provider",
     historyModelLabel: "Model",
@@ -193,6 +197,10 @@ const TEXT_CONTENT = {
     historyDeleteButton: "删除",
     historyCopied: "提示词已复制。",
     historyDeleted: "记录已删除。",
+    historyExportButton: "导出 Excel",
+    historyExported: "生成历史已导出。",
+    historyPromptLabel: "提示词",
+    historyImageColumnLabel: "图片",
     historyTimeLabel: "生成时间",
     historyProviderLabel: "模型提供商",
     historyModelLabel: "模型",
@@ -300,6 +308,7 @@ let tabButtons = [];
 let historyContainer = null;
 let currentView = "settings";
 let viewPanels = [];
+let historyExportButton = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("options-form");
@@ -321,6 +330,9 @@ document.addEventListener("DOMContentLoaded", () => {
   tabButtons = Array.from(document.querySelectorAll(".options-tab"));
   historyContainer = document.querySelector(".options-history");
   viewPanels = Array.from(document.querySelectorAll("[data-view-panel]"));
+  historyExportButton = historyContainer?.querySelector(
+    "[data-action='exportHistory']"
+  ) || null;
   providerSelectEl = form?.llmProvider || null;
   providerApiKeyInput = form?.providerApiKey || null;
   providerModelInput = form?.providerModel || null;
@@ -395,6 +407,10 @@ document.addEventListener("DOMContentLoaded", () => {
     historyListEl.addEventListener("click", handleHistoryListClick);
   }
 
+  if (historyExportButton) {
+    historyExportButton.addEventListener("click", handleHistoryExportClick);
+  }
+
   applyLanguage(currentLanguage);
   updateLanguageButtons(languageButtons);
   bindLanguageButtons(languageButtons, statusEl);
@@ -462,6 +478,110 @@ function switchView(nextView) {
   if (normalized === "history") {
     renderHistory();
   }
+}
+
+function handleHistoryExportClick() {
+  if (!generationHistoryState.length) {
+    displayStatus(statusNode, translate("historyEmpty"), true);
+    return;
+  }
+
+  const rows = buildHistoryExportRows(generationHistoryState);
+
+  const tableMarkup = rows
+    .map((row, rowIndex) => {
+      const cellTag = rowIndex === 0 ? "th" : "td";
+      const cells = row
+        .map((cell) => {
+          const styleAttr = cell && typeof cell === "object" && cell.style
+            ? ` style=\"${cell.style}\"`
+            : "";
+          if (cell && typeof cell === "object" && cell.html) {
+            return `<${cellTag}${styleAttr}>${cell.value}</${cellTag}>`;
+          }
+          const value = cell && typeof cell === "object" ? cell.value : cell;
+          return `<${cellTag}${styleAttr}>${escapeForExport(value)}</${cellTag}>`;
+        })
+        .join("");
+      return `<tr>${cells}</tr>`;
+    })
+    .join("");
+
+  const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8" /></head><body><table>${tableMarkup}</table></body></html>`;
+  const blob = new Blob(["\ufeff" + htmlContent], {
+    type: "application/vnd.ms-excel"
+  });
+  triggerDownload(blob, `image2prompt-history-${new Date().toISOString().slice(0, 10)}.xls`);
+  displayStatus(statusNode, translate("historyExported"));
+}
+
+function buildHistoryExportRows(entries) {
+  const imageCellStyle = "width:120px;height:120px;text-align:center;vertical-align:middle;";
+  const header = [
+    { value: translate("historyTimeLabel") },
+    { value: translate("historyProviderLabel") },
+    { value: translate("historyModelLabel") },
+    { value: translate("historyPlatformLabel") },
+    { value: translate("historyCustomInstructionLabel") },
+    { value: translate("historyPromptLabel") },
+    { value: translate("historyImageColumnLabel"), style: imageCellStyle }
+  ];
+  const rows = [header];
+  entries.forEach((entry) => {
+    const imageCell = buildHistoryImageCell(entry);
+    rows.push([
+      { value: formatHistoryTimestamp(entry.createdAt) },
+      { value: entry.provider || "" },
+      { value: entry.model || "" },
+      { value: entry.platformName || entry.platformUrl || "" },
+      { value: entry.customInstruction || "" },
+      { value: entry.prompt || "" },
+      imageCell
+    ]);
+  });
+  return rows;
+}
+
+function buildHistoryImageCell(entry) {
+  const src = entry.imageDataUrl;
+  if (src) {
+    const alt = escapeForExport(entry.imageAlt || translate("historyImageAlt"));
+    const html = `<div style="width:120px;height:120px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+      <img src="${src}" alt="${alt}" width="120" height="120" style="width:100%;height:100%;max-width:120px;max-height:120px;object-fit:contain;display:block;" />
+    </div>`;
+    return {
+      value: html,
+      html: true,
+      style: "width:120px;height:120px;text-align:center;vertical-align:middle;"
+    };
+  }
+  return { value: entry.imageAlt || translate("historyImageAlt") };
+}
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.style.display = "none";
+  document.body.appendChild(anchor);
+  anchor.click();
+  setTimeout(() => {
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  }, 0);
+}
+
+function escapeForExport(value) {
+  if (value == null) {
+    return "";
+  }
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function restoreOptions(form, statusEl) {

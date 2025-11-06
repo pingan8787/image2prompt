@@ -36,7 +36,7 @@
           <a class="sidebar-github" href="https://github.com/pingan8787/image2prompt" target="_blank"
             rel="noopener noreferrer" data-i18n="githubCta"></a>
           <div class="version">
-            v0.1.3
+            v0.1.4
           </div>
         </div>
       </aside>
@@ -112,7 +112,8 @@
             </label>
             <label class="options-field" data-custom-aspect-wrapper hidden>
               <span data-i18n="customAspectRatioLabel"></span>
-              <input type="text" name="customAspectRatio" data-i18n="customAspectRatioPlaceholder" data-i18n-attr="placeholder" disabled />
+              <input type="text" name="customAspectRatio" data-i18n="customAspectRatioPlaceholder"
+                data-i18n-attr="placeholder" disabled />
               <small data-i18n="customAspectRatioHint"></small>
             </label>
             <label class="options-field">
@@ -137,6 +138,20 @@
                 <input type="number" name="minImageHeight" min="0" />
               </label>
             </div>
+          </section>
+
+          <section class="options-section" id="section-domain-filters">
+            <div class="options-section__heading">
+              <h2 data-i18n="domainHeading"></h2>
+              <p data-i18n="domainDescription"></p>
+            </div>
+            <div class="domain-filter__control">
+              <input type="text" name="domainFilterInput" class="domain-filter__input"
+                data-i18n="domainInputPlaceholder" data-i18n-attr="placeholder" />
+              <button type="button" class="domain-filter__add" data-i18n="domainAddButton"></button>
+            </div>
+            <p class="domain-filter__empty" data-i18n="domainListEmpty"></p>
+            <ul class="domain-filter__list"></ul>
           </section>
 
           <section class="options-section" id="section-platform">

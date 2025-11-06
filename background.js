@@ -177,6 +177,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function handleGeneratePrompt(message, sender) {
   const config = await getConfig();
   const { providerId, provider, settings } = resolveProvider(config);
+  const pageHostname = extractHostnameFromSender(sender);
+  if (isDomainBlocked(pageHostname, config.domainFilters)) {
+    throw new Error("Prompt generation is disabled on this domain.");
+  }
   const imageData = await getImageDataFromMessage(message);
   const languageDirective = getLanguageDirective(config.promptLanguage);
   const instruction = config.promptInstruction || DEFAULT_CONFIG.promptInstruction;
@@ -720,6 +724,7 @@ function sanitizeConfig(raw) {
   merged.customAspectRatio = merged.aspectRatio === "custom"
     ? sanitizeAspectRatio(raw?.customAspectRatio)
     : "";
+  merged.domainFilters = sanitizeDomainFilters(raw?.domainFilters);
   return merged;
 }
 
@@ -789,6 +794,92 @@ function appendAspectRatioToPrompt(prompt, aspectRatio, customAspectRatio) {
     return prompt;
   }
   return `${prompt}\n\nAspect ratio: ${ratioValue}`;
+}
+
+function sanitizeDomainFilters(list) {
+  if (!Array.isArray(list)) {
+    return [];
+  }
+  const unique = new Set();
+  list.forEach((entry) => {
+    const sanitized = sanitizeDomain(entry);
+    if (sanitized) {
+      unique.add(sanitized);
+    }
+  });
+  return Array.from(unique).sort();
+}
+
+function sanitizeDomain(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+  let domain = value.trim().toLowerCase();
+  if (!domain) {
+    return "";
+  }
+  domain = domain.replace(/^https?:\/\//i, "");
+  domain = domain.replace(/\/.*$/, "");
+  domain = domain.replace(/:\d+$/, "");
+  domain = domain.replace(/^\.+/, "");
+  if (domain.startsWith("www.")) {
+    domain = domain.slice(4);
+  }
+  domain = domain.replace(/\.$/, "");
+  if (!domain) {
+    return "";
+  }
+  if (!/^[a-z0-9.-]+$/.test(domain)) {
+    return "";
+  }
+  if (!domain.includes(".") && domain !== "localhost") {
+    return "";
+  }
+  return domain;
+}
+
+function normalizeHostname(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+  let host = value.trim().toLowerCase();
+  if (!host) {
+    return "";
+  }
+  host = host.replace(/^[.]+/, "");
+  if (host.startsWith("www.")) {
+    host = host.slice(4);
+  }
+  return host.replace(/[.]+$/, "");
+}
+
+function isDomainBlocked(hostname, filters) {
+  if (!hostname) {
+    return false;
+  }
+  const normalizedHost = normalizeHostname(hostname);
+  return filters.some((domain) => {
+    if (!domain) {
+      return false;
+    }
+    if (normalizedHost === domain) {
+      return true;
+    }
+    return normalizedHost.endsWith(`.${domain}`);
+  });
+}
+
+function extractHostnameFromSender(sender) {
+  const url = sender?.tab?.url;
+  if (!url) {
+    return "";
+  }
+  try {
+    const parsed = new URL(url);
+    return normalizeHostname(parsed.hostname || "");
+  } catch (error) {
+    return "";
+  }
 }
 
 function sanitizeProviderSettings(raw, legacySource = {}) {

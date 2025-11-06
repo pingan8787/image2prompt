@@ -31,6 +31,7 @@ Click it, and the extension will automatically upload the image, generate a prom
 | 🪶 **Lightweight UI**       | Inspired by shadcnUI, built with custom-drawn components and no third-party dependencies                             |
 | 🔓 **Open Source & Free**   | 100% open-source and completely free to use                                                                          |
 | 🧮 **Aspect Ratio Presets** | Pick cinematic ratios or add your own so every prompt respects the frame you need                                    |
+| 🚫 **Domain Filters**       | Hide the capture button on sites you exclude so browsing stays distraction-free                                       |
 
 ## 🌈 Installation
 

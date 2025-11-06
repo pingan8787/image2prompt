@@ -465,6 +465,95 @@ body {
   min-height: 120px;
 }
 
+.options-field[data-custom-aspect-wrapper]:not([hidden]) {
+  display: flex;
+}
+
+.domain-filter__control {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.domain-filter__input {
+  flex: 1 1 220px;
+  min-width: 220px;
+  font: inherit;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(255, 255, 255, 0.92);
+  color: inherit;
+}
+
+.domain-filter__add {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 20px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  background: rgba(37, 99, 235, 0.9);
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.domain-filter__add:hover,
+.domain-filter__add:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+  outline: none;
+}
+
+.domain-filter__empty {
+  font-size: 14px;
+  color: rgba(15, 23, 42, 0.65);
+}
+
+.domain-filter__list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.domain-filter__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(248, 250, 252, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  font-size: 14px;
+  gap: 12px;
+}
+
+.domain-filter__name {
+  word-break: break-all;
+}
+
+.domain-filter__remove {
+  border: none;
+  background: rgba(239, 68, 68, 0.15);
+  color: #b91c1c;
+  border-radius: 12px;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.domain-filter__remove:hover,
+.domain-filter__remove:focus-visible {
+  background: rgba(239, 68, 68, 0.25);
+  outline: none;
+}
+
 .options-field input:focus,
 .options-field textarea:focus,
 .options-field select:focus {
@@ -494,6 +583,31 @@ body {
   .options-field select:focus {
     border-color: rgba(56, 189, 248, 0.7);
     box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+  }
+
+  .domain-filter__input {
+    background: rgba(15, 23, 42, 0.9);
+    border-color: rgba(94, 104, 130, 0.45);
+    color: rgba(241, 245, 249, 0.92);
+  }
+
+  .domain-filter__add {
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color: #0f172a;
+  }
+
+  .domain-filter__empty {
+    color: rgba(226, 232, 240, 0.7);
+  }
+
+  .domain-filter__item {
+    background: rgba(30, 41, 59, 0.85);
+    border-color: rgba(94, 104, 130, 0.25);
+  }
+
+  .domain-filter__remove {
+    background: rgba(239, 68, 68, 0.25);
+    color: #fecaca;
   }
 }
 

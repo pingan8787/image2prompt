@@ -27,7 +27,8 @@ const DEFAULT_CONFIG = {
   customPlatforms: [],
   enableCustomPromptInput: false,
   aspectRatio: "auto",
-  customAspectRatio: ""
+  customAspectRatio: "",
+  domainFilters: []
 };
 
 const BUTTON_CLASS = "i2p-button";
@@ -36,6 +37,7 @@ const DATASET_KEY = "i2pTracked";
 const BUTTON_ICON = "✎";
 const CUSTOM_DIALOG_BACKDROP_CLASS = "i2p-dialog-backdrop";
 const CUSTOM_DIALOG_CLASS = "i2p-dialog";
+const CURRENT_HOSTNAME = normalizeHostname(window.location.hostname || "");
 
 const UI_STRINGS = {
   en: {
@@ -110,7 +112,11 @@ function loadConfig() {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError);
       } else {
-        config = { ...DEFAULT_CONFIG, ...items };
+        config = {
+          ...DEFAULT_CONFIG,
+          ...items,
+          domainFilters: sanitizeDomainFilters(items.domainFilters)
+        };
         resolve();
       }
     });
@@ -126,6 +132,11 @@ function watchForConfigChanges() {
     let shouldReevaluate = false;
     let shouldUpdateLabels = false;
     for (const [key, change] of Object.entries(changes)) {
+      if (key === "domainFilters") {
+        config.domainFilters = sanitizeDomainFilters(change.newValue);
+        shouldReevaluate = true;
+        continue;
+      }
       config[key] = change.newValue ?? DEFAULT_CONFIG[key];
       if (key === "minImageWidth" || key === "minImageHeight") {
         shouldReevaluate = true;
@@ -221,6 +232,11 @@ function refreshAllImages() {
 function updateImageOverlay(img) {
   if (!img.isConnected) {
     cleanupImage(img);
+    return;
+  }
+
+  if (isDomainBlocked(CURRENT_HOSTNAME, config.domainFilters)) {
+    removeOverlay(img);
     return;
   }
 
@@ -863,4 +879,77 @@ function parseDataUrl(url) {
     };
   }
   return { mimeType, data };
+}
+
+function sanitizeDomainFilters(list) {
+  if (!Array.isArray(list)) {
+    return [];
+  }
+  const unique = new Set();
+  list.forEach((entry) => {
+    const sanitized = sanitizeDomain(entry);
+    if (sanitized) {
+      unique.add(sanitized);
+    }
+  });
+  return Array.from(unique).sort();
+}
+
+function sanitizeDomain(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+  let domain = value.trim().toLowerCase();
+  if (!domain) {
+    return "";
+  }
+  domain = domain.replace(/^https?:\/\//i, "");
+  domain = domain.replace(/\/.*$/, "");
+  domain = domain.replace(/:\d+$/, "");
+  domain = domain.replace(/^\.+/, "");
+  if (domain.startsWith("www.")) {
+    domain = domain.slice(4);
+  }
+  domain = domain.replace(/\.$/, "");
+  if (!domain) {
+    return "";
+  }
+  if (!/^[a-z0-9.-]+$/.test(domain)) {
+    return "";
+  }
+  if (!domain.includes(".") && domain !== "localhost") {
+    return "";
+  }
+  return domain;
+}
+
+function normalizeHostname(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+  let host = value.trim().toLowerCase();
+  if (!host) {
+    return "";
+  }
+  host = host.replace(/^\.+/, "");
+  if (host.startsWith("www.")) {
+    host = host.slice(4);
+  }
+  return host.replace(/\.$/, "");
+}
+
+function isDomainBlocked(hostname, filters) {
+  if (!hostname) {
+    return false;
+  }
+  const normalizedHost = normalizeHostname(hostname);
+  return filters.some((domain) => {
+    if (!domain) {
+      return false;
+    }
+    if (normalizedHost === domain) {
+      return true;
+    }
+    return normalizedHost.endsWith(`.${domain}`);
+  });
 }

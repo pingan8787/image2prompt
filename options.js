@@ -57,6 +57,9 @@ const DEFAULT_CONFIG = {
   customPlatforms: [],
   enableCustomPromptInput: false,
   aspectRatio: "auto",
+  customAspectRatio: "",
+  domainFilters: [],
+  aspectRatio: "auto",
   customAspectRatio: ""
 };
 
@@ -101,6 +104,14 @@ const TEXT_CONTENT = {
     customAspectRatioHint: "Use formats like 5:4 or 1024x768.",
     customAspectError: "Enter a custom aspect ratio before saving.",
     customAspectInvalid: "Enter a valid aspect ratio such as 5:4 or 1024x768.",
+    domainHeading: "Domain filters",
+    domainDescription: "Hide the capture button on pages whose host matches these domains.",
+    domainInputPlaceholder: "e.g. example.com",
+    domainAddButton: "Add domain",
+    domainListEmpty: "You haven't filtered any domains yet.",
+    domainInvalidError: "Enter a valid domain like example.com.",
+    domainDuplicateError: "Domain is already on your filter list.",
+    domainRemoveButton: "Remove",
     filterHeading: "Image Filter",
     filterDescription: "Only show the button on images that meet these minimum dimensions.",
     minWidthLabel: "Minimum width (px)",
@@ -187,6 +198,14 @@ const TEXT_CONTENT = {
     customAspectRatioHint: "格式示例：5:4 或 1024x768。",
     customAspectError: "请选择自定义比例时请填写具体数值。",
     customAspectInvalid: "请输入合法的图片比例，例如 5:4 或 1024x768。",
+    domainHeading: "域名过滤",
+    domainDescription: "在以下域名的页面中隐藏捕捉按钮。",
+    domainInputPlaceholder: "例如 example.com",
+    domainAddButton: "添加域名",
+    domainListEmpty: "当前还没有添加需要过滤的域名。",
+    domainInvalidError: "请输入合法的域名，例如 example.com。",
+    domainDuplicateError: "该域名已在过滤列表中。",
+    domainRemoveButton: "删除",
     filterHeading: "图片筛选",
     filterDescription: "只在满足最低尺寸的图片上显示按钮。",
     minWidthLabel: "最小宽度（像素）",
@@ -332,6 +351,11 @@ let historyExportButton = null;
 let aspectRatioSelectEl = null;
 let customAspectWrapper = null;
 let customAspectInput = null;
+let domainFiltersState = [...DEFAULT_CONFIG.domainFilters];
+let domainInputEl = null;
+let domainAddButton = null;
+let domainListEl = null;
+let domainEmptyEl = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("options-form");
@@ -362,6 +386,10 @@ document.addEventListener("DOMContentLoaded", () => {
   toggleCustomAspectVisibility(
     normalizeAspectRatio(aspectRatioSelectEl?.value ?? DEFAULT_CONFIG.aspectRatio) === "custom"
   );
+  domainInputEl = form?.domainFilterInput || null;
+  domainAddButton = document.querySelector(".domain-filter__add") || null;
+  domainListEl = document.querySelector(".domain-filter__list") || null;
+  domainEmptyEl = document.querySelector(".domain-filter__empty") || null;
   providerSelectEl = form?.llmProvider || null;
   providerApiKeyInput = form?.providerApiKey || null;
   providerModelInput = form?.providerModel || null;
@@ -427,6 +455,25 @@ document.addEventListener("DOMContentLoaded", () => {
     customAddButton.addEventListener("click", () => {
       handleAddCustomPlatform(form, statusEl);
     });
+  }
+
+  if (domainAddButton) {
+    domainAddButton.addEventListener("click", () => {
+      handleAddDomainFilter(statusEl);
+    });
+  }
+
+  if (domainInputEl) {
+    domainInputEl.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleAddDomainFilter(statusEl);
+      }
+    });
+  }
+
+  if (domainListEl) {
+    domainListEl.addEventListener("click", handleDomainFilterListClick);
   }
 
   tabButtons.forEach((button) => {
@@ -656,6 +703,115 @@ function normalizeAspectRatio(value) {
   return allowed.has(value) ? value : "auto";
 }
 
+function handleAddDomainFilter(statusEl) {
+  if (!domainInputEl) {
+    return;
+  }
+  const sanitized = sanitizeDomain(domainInputEl.value);
+  if (!sanitized) {
+    displayStatus(statusEl, translate("domainInvalidError"), true);
+    return;
+  }
+  if (domainFiltersState.includes(sanitized)) {
+    displayStatus(statusEl, translate("domainDuplicateError"), true);
+    return;
+  }
+  domainFiltersState.push(sanitized);
+  domainFiltersState.sort();
+  renderDomainFilters();
+  domainInputEl.value = "";
+}
+
+function renderDomainFilters() {
+  if (!domainListEl || !domainEmptyEl) {
+    return;
+  }
+  domainListEl.innerHTML = "";
+  if (!domainFiltersState.length) {
+    domainEmptyEl.hidden = false;
+    domainListEl.hidden = true;
+    return;
+  }
+  domainEmptyEl.hidden = true;
+  domainListEl.hidden = false;
+  const fragment = document.createDocumentFragment();
+  domainFiltersState.forEach((domain) => {
+    const item = document.createElement("li");
+    item.className = "domain-filter__item";
+    const name = document.createElement("span");
+    name.className = "domain-filter__name";
+    name.textContent = domain;
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "domain-filter__remove";
+    removeBtn.dataset.action = "removeDomain";
+    removeBtn.dataset.domain = domain;
+    removeBtn.textContent = translate("domainRemoveButton");
+    item.append(name, removeBtn);
+    fragment.appendChild(item);
+  });
+  domainListEl.appendChild(fragment);
+}
+
+function handleDomainFilterListClick(event) {
+  const button = event.target.closest("button[data-action='removeDomain']");
+  if (!button) {
+    return;
+  }
+  removeDomainFilter(button.dataset.domain || "");
+}
+
+function removeDomainFilter(domain) {
+  const index = domainFiltersState.findIndex((item) => item === domain);
+  if (index === -1) {
+    return;
+  }
+  domainFiltersState.splice(index, 1);
+  renderDomainFilters();
+}
+
+function sanitizeDomain(value) {
+  if (typeof value !== "string") {
+    return "";
+  }
+  let domain = value.trim().toLowerCase();
+  if (!domain) {
+    return "";
+  }
+  domain = domain.replace(/^https?:\/\//i, "");
+  domain = domain.replace(/\/.*$/, "");
+  domain = domain.replace(/:\d+$/, "");
+  domain = domain.replace(/^\.+/, "");
+  if (domain.startsWith("www.")) {
+    domain = domain.slice(4);
+  }
+  domain = domain.replace(/\.$/, "");
+  if (!domain) {
+    return "";
+  }
+  if (!/^[a-z0-9.-]+$/.test(domain)) {
+    return "";
+  }
+  if (!domain.includes(".") && domain !== "localhost") {
+    return "";
+  }
+  return domain;
+}
+
+function sanitizeDomainFilters(list) {
+  if (!Array.isArray(list)) {
+    return [];
+  }
+  const unique = new Set();
+  list.forEach((item) => {
+    const sanitized = sanitizeDomain(item);
+    if (sanitized) {
+      unique.add(sanitized);
+    }
+  });
+  return Array.from(unique).sort();
+}
+
 function restoreOptions(form, statusEl) {
   chrome.storage.sync.get(DEFAULT_CONFIG, (items) => {
     if (chrome.runtime.lastError) {
@@ -677,6 +833,7 @@ function restoreOptions(form, statusEl) {
         .map(sanitizeCustomPlatform)
         .filter(Boolean)
       : [];
+    domainFiltersState = sanitizeDomainFilters(items.domainFilters);
     selectedPlatformId = normalizePlatformId(items.selectedPlatformId);
     selectedPlatformLabel = items.selectedPlatformLabel || getPlatformLabelById(selectedPlatformId);
     applyLanguage(currentLanguage);
@@ -800,6 +957,7 @@ function saveOptions(form, statusEl) {
     name,
     url
   }));
+  payload.domainFilters = [...domainFiltersState];
   payload.providerSettings = providerSettings;
 
   renderCustomPlatforms();
@@ -827,6 +985,7 @@ function applyLanguage(lang) {
   renderProviderOptions();
   renderCustomPlatforms();
   renderPlatformOptions();
+  renderDomainFilters();
   syncPlatformUrlWithSelection(formEl, { preserveExisting: true });
   renderHistory();
   updateProviderInfoContent();

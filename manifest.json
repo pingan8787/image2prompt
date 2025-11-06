@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "image2prompt",
   "description": "A free, open-source Chrome extension that turns any image into an AI-ready prompt — 100% vibe-coded by AI.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "permissions": [
     "storage",
     "tabs"

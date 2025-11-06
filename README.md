@@ -4,6 +4,7 @@
 
 [English](README.md)
 [中文](README.zh-CN.md)
+[Twitter](https://x.com/Chris1993Coding)
 [WiseMindAI](https://wisemindai.app/?utm_source=github-image2prompt)
 
 </div>
@@ -31,7 +32,7 @@ Click it, and the extension will automatically upload the image, generate a prom
 | 🪶 **Lightweight UI**       | Inspired by shadcnUI, built with custom-drawn components and no third-party dependencies                             |
 | 🔓 **Open Source & Free**   | 100% open-source and completely free to use                                                                          |
 | 🧮 **Aspect Ratio Presets** | Pick cinematic ratios or add your own so every prompt respects the frame you need                                    |
-| 🚫 **Domain Filters**       | Hide the capture button on sites you exclude so browsing stays distraction-free                                       |
+| 🚫 **Domain Filters**       | Hide the capture button on sites you exclude so browsing stays distraction-free                                      |
 
 ## 🌈 Installation
 
@@ -63,3 +64,9 @@ Then, whenever you hover over an image on any webpage, you’ll see an “Edit�
 Want to blend in extra guidance (for example, “switch the background to a neon city”)? Enable **Custom instructions input** in **Settings → Prompt Generation** to open a dialog before each run and merge your tweaks with the system prompt.
 
 ![Project](https://github.com/user-attachments/assets/905995c7-bdb6-4c8f-b70d-44b24684c99d)
+
+## 💬 Contact Me
+
+Scan the WeChat QR code below to get in touch:
+
+<img width="1124" height="1118" alt="Image" src="https://github.com/user-attachments/assets/571d1d58-ba15-4f3b-922a-f0ec7be36029" />

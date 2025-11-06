@@ -4,6 +4,7 @@
 
 [English](README.md)
 [中文](README.zh-CN.md)
+[Twitter](https://x.com/Chris1993Coding)
 [WiseMindAI](https://wisemindai.app/?utm_source=github-image2prompt)
 
 </div>
@@ -61,3 +62,9 @@ git clone https://github.com/pingan8787/image2prompt.git
 想在生成前补充几句说明（例如「把背景改成霓虹城市」）？在 **设置 → 提示词生成** 中开启 **自定义指令输入**，生成前会弹出输入框，将你的补充说明与系统提示词一起发送给模型。
 
 ![项目简介](https://github.com/user-attachments/assets/905995c7-bdb6-4c8f-b70d-44b24684c99d)
+
+## 💬 联系我
+
+扫描下面微信二维码联系：
+
+<img width="1124" height="1118" alt="Image" src="https://github.com/user-attachments/assets/571d1d58-ba15-4f3b-922a-f0ec7be36029" />

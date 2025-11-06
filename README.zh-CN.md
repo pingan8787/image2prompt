@@ -67,4 +67,4 @@ git clone https://github.com/pingan8787/image2prompt.git
 
 扫描下面微信二维码联系：
 
-<img width="1124" height="1118" alt="Image" src="https://github.com/user-attachments/assets/571d1d58-ba15-4f3b-922a-f0ec7be36029" />
+<img width="300" height="300" alt="Image" src="https://github.com/user-attachments/assets/571d1d58-ba15-4f3b-922a-f0ec7be36029" />

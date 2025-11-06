@@ -69,4 +69,4 @@ Want to blend in extra guidance (for example, “switch the background to a neon
 
 Scan the WeChat QR code below to get in touch:
 
-<img width="1124" height="1118" alt="Image" src="https://github.com/user-attachments/assets/571d1d58-ba15-4f3b-922a-f0ec7be36029" />
+<img width="300" height="300" alt="Image" src="https://github.com/user-attachments/assets/571d1d58-ba15-4f3b-922a-f0ec7be36029" />

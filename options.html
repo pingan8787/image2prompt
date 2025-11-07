@@ -45,6 +45,7 @@
         <div class="options-card__tabs">
           <button type="button" class="options-tab is-active" data-view="settings" data-i18n="tabSettings"></button>
           <button type="button" class="options-tab" data-view="history" data-i18n="tabHistory"></button>
+          <button type="button" class="options-tab" data-view="local" data-i18n="tabLocal"></button>
         </div>
 
         <form id="options-form" class="options-form" data-view-panel="settings">
@@ -211,6 +212,19 @@
           </div>
           <p class="history-empty" data-i18n="historyEmpty"></p>
           <ul class="history-list"></ul>
+        </section>
+
+        <section class="options-local" data-view-panel="local" hidden>
+          <div class="options-local__heading">
+            <h2 data-i18n="localHeading"></h2>
+            <p data-i18n="localDescription"></p>
+          </div>
+          <label class="local-upload">
+            <input type="file" name="localImageUpload" accept="image/*" multiple hidden />
+            <span class="local-upload__button" data-i18n="localUploadHint"></span>
+          </label>
+          <p class="local-empty" data-i18n="localListEmpty"></p>
+          <ul class="local-list"></ul>
         </section>
       </section>
     </div>

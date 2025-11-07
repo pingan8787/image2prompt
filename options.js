@@ -95,6 +95,13 @@ const TEXT_CONTENT = {
     promptLanguageHelp: "The model replies in the selected locale.",
     customPromptToggleLabel: "Enable custom instructions dialog",
     customPromptToggleHelp: "Ask for extra instructions before generating a prompt.",
+    customDialogTitle: "Add custom instructions",
+    customDialogDescription:
+      "Optional: describe per-image tweaks before the model crafts the prompt.",
+    customDialogPlaceholder:
+      "Example: Replace the background with a neon-lit city skyline.",
+    customDialogConfirm: "Generate prompt",
+    customDialogCancel: "Cancel",
     aspectRatioLabel: "Image aspect ratio",
     aspectRatioHelp: "Pick a target ratio to merge into the generated prompt.",
     aspectRatioOptionAuto: "Auto-detect",
@@ -112,6 +119,18 @@ const TEXT_CONTENT = {
     domainInvalidError: "Enter a valid domain like example.com.",
     domainDuplicateError: "Domain is already on your filter list.",
     domainRemoveButton: "Remove",
+    localHeading: "Generate prompts from local images",
+    localDescription: "Upload any image from your computer and image2prompt will craft a ready-to-use prompt.",
+    localUploadHint: "Click to select local images",
+    localListEmpty: "You haven't added any local images yet.",
+    localGenerateButton: "Generate prompt",
+    localGenerating: "Generating…",
+    localRemoveButton: "Remove",
+    localCopyButton: "Copy prompt",
+    localCopied: "Prompt copied.",
+    localUploadError: "Unable to read this file.",
+    localErrorPrefix: "Failed to generate prompt.",
+    localUnnamed: "Untitled image",
     filterHeading: "Image Filter",
     filterDescription: "Only show the button on images that meet these minimum dimensions.",
     minWidthLabel: "Minimum width (px)",
@@ -142,6 +161,7 @@ const TEXT_CONTENT = {
     historyDeleteButton: "Delete",
     historyCopied: "Prompt copied to clipboard.",
     historyDeleted: "History entry removed.",
+    copyFailed: "Unable to copy prompt.",
     historyExportButton: "Export to Excel",
     historyExported: "History exported.",
     historyPromptLabel: "Prompt",
@@ -152,8 +172,10 @@ const TEXT_CONTENT = {
     historyPlatformLabel: "Platform",
     historyImageAlt: "Generated image preview",
     historyCustomInstructionLabel: "Custom instructions",
+    imageViewerCloseLabel: "Close image preview",
     tabSettings: "Settings",
     tabHistory: "History",
+    tabLocal: "Local images",
     saveButton: "Save settings",
     statusSaved: "Settings saved.",
     statusLanguageError: "Unable to sync language preference."
@@ -189,6 +211,11 @@ const TEXT_CONTENT = {
     promptLanguageHelp: "模型会按照所选的语言返回提示词。",
     customPromptToggleLabel: "启用自定义指令输入",
     customPromptToggleHelp: "生成前先弹出输入框，让你补充额外说明。",
+    customDialogTitle: "补充自定义说明",
+    customDialogDescription: "（可选）填写本次生成的额外需求，再交给模型生成提示词。",
+    customDialogPlaceholder: "示例：把背景改成赛博朋克风格的霓虹城市。",
+    customDialogConfirm: "生成提示词",
+    customDialogCancel: "取消",
     aspectRatioLabel: "图片比例",
     aspectRatioHelp: "选择要合并到提示词中的目标画面比例。",
     aspectRatioOptionAuto: "自动",
@@ -206,6 +233,18 @@ const TEXT_CONTENT = {
     domainInvalidError: "请输入合法的域名，例如 example.com。",
     domainDuplicateError: "该域名已在过滤列表中。",
     domainRemoveButton: "删除",
+    localHeading: "从本地图片生成提示词",
+    localDescription: "上传电脑里的图片，image2prompt 会为你生成可用的提示词并复制。",
+    localUploadHint: "点击选择本地图片",
+    localListEmpty: "目前还没有添加本地图片。",
+    localGenerateButton: "生成提示词",
+    localGenerating: "生成中…",
+    localRemoveButton: "删除",
+    localCopyButton: "复制提示词",
+    localCopied: "提示词已复制。",
+    localUploadError: "读取文件失败。",
+    localErrorPrefix: "生成提示词失败。",
+    localUnnamed: "未命名图片",
     filterHeading: "图片筛选",
     filterDescription: "只在满足最低尺寸的图片上显示按钮。",
     minWidthLabel: "最小宽度（像素）",
@@ -236,6 +275,7 @@ const TEXT_CONTENT = {
     historyDeleteButton: "删除",
     historyCopied: "提示词已复制。",
     historyDeleted: "记录已删除。",
+    copyFailed: "无法复制提示词。",
     historyExportButton: "导出 Excel",
     historyExported: "生成历史已导出。",
     historyPromptLabel: "提示词",
@@ -246,8 +286,10 @@ const TEXT_CONTENT = {
     historyPlatformLabel: "平台",
     historyImageAlt: "生成图像预览",
     historyCustomInstructionLabel: "自定义说明",
+    imageViewerCloseLabel: "关闭大图预览",
     tabSettings: "设置",
     tabHistory: "生成历史",
+    tabLocal: "本地图片",
     saveButton: "保存设置",
     statusSaved: "设置已保存。",
     statusLanguageError: "无法同步语言偏好。"
@@ -356,6 +398,14 @@ let domainInputEl = null;
 let domainAddButton = null;
 let domainListEl = null;
 let domainEmptyEl = null;
+let localImagesState = [];
+let localUploadInput = null;
+let localListEl = null;
+let localEmptyEl = null;
+let imageViewerOverlay = null;
+let imageViewerImage = null;
+let imageViewerCloseBtn = null;
+let bodyOverflowBeforeViewer = "";
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("options-form");
@@ -390,6 +440,9 @@ document.addEventListener("DOMContentLoaded", () => {
   domainAddButton = document.querySelector(".domain-filter__add") || null;
   domainListEl = document.querySelector(".domain-filter__list") || null;
   domainEmptyEl = document.querySelector(".domain-filter__empty") || null;
+  localUploadInput = document.querySelector("input[name='localImageUpload']");
+  localListEl = document.querySelector(".local-list");
+  localEmptyEl = document.querySelector(".local-empty");
   providerSelectEl = form?.llmProvider || null;
   providerApiKeyInput = form?.providerApiKey || null;
   providerModelInput = form?.providerModel || null;
@@ -476,6 +529,16 @@ document.addEventListener("DOMContentLoaded", () => {
     domainListEl.addEventListener("click", handleDomainFilterListClick);
   }
 
+  if (localUploadInput) {
+    localUploadInput.addEventListener("change", handleLocalUploadChange);
+  }
+
+  if (localListEl) {
+    localListEl.addEventListener("click", handleLocalListClick);
+  }
+
+  setupImageViewer();
+
   tabButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const targetView = button.dataset.view || "settings";
@@ -547,16 +610,19 @@ function persistLanguage(statusEl) {
 
 function switchView(nextView) {
   const normalized = nextView === "history" ? "history" : "settings";
-  currentView = normalized;
+  const targetView = nextView === "local" ? "local" : normalized;
+  currentView = targetView;
   tabButtons.forEach((button) => {
-    button.classList.toggle("is-active", (button.dataset.view || "settings") === normalized);
+    button.classList.toggle("is-active", (button.dataset.view || "settings") === targetView);
   });
   viewPanels.forEach((panel) => {
     const panelView = panel.dataset.viewPanel || "settings";
-    panel.hidden = panelView !== normalized;
+    panel.hidden = panelView !== targetView;
   });
-  if (normalized === "history") {
+  if (targetView === "history") {
     renderHistory();
+  } else if (targetView === "local") {
+    renderLocalImages();
   }
 }
 
@@ -812,6 +878,480 @@ function sanitizeDomainFilters(list) {
   return Array.from(unique).sort();
 }
 
+function handleLocalUploadChange(event) {
+  const files = Array.from(event.target.files || []);
+  event.target.value = "";
+  if (!files.length) {
+    return;
+  }
+  files.forEach((file) => {
+    readFileAsDataUrl(file)
+      .then((dataUrl) => {
+        const [meta, base64 = ""] = dataUrl.split(",");
+        const mimeMatch = /^data:(.*?);base64$/.exec(meta || "");
+        const mimeType = mimeMatch?.[1] || file.type || "image/png";
+        localImagesState.push({
+          id: generateLocalImageId(),
+          name: file.name || translate("localUnnamed"),
+          sizeLabel: formatFileSize(file.size),
+          mimeType,
+          dataUrl,
+          base64,
+          prompt: "",
+          isGenerating: false,
+          error: ""
+        });
+        renderLocalImages();
+      })
+      .catch(() => {
+        displayStatus(statusNode, translate("localUploadError"), true);
+      });
+  });
+}
+
+function handleLocalListClick(event) {
+  const previewImg = event.target.closest(".local-card__preview img");
+  if (previewImg?.dataset.fullImage) {
+    openImageViewer(previewImg.dataset.fullImage, previewImg.alt || "");
+    return;
+  }
+
+  const button = event.target.closest("button[data-action]");
+  if (!button) {
+    return;
+  }
+  const { action, localId } = button.dataset;
+  if (!localId) {
+    return;
+  }
+  if (action === "generateLocal") {
+    generatePromptForLocalImage(localId);
+  } else if (action === "removeLocal") {
+    removeLocalImage(localId);
+  } else if (action === "copyLocal") {
+    copyLocalPrompt(localId);
+  }
+}
+
+function setupImageViewer() {
+  if (imageViewerOverlay) {
+    return;
+  }
+  const overlay = document.createElement("div");
+  overlay.className = "image-viewer";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-hidden", "true");
+
+  const content = document.createElement("div");
+  content.className = "image-viewer__content";
+
+  const image = document.createElement("img");
+  image.className = "image-viewer__image";
+  image.alt = "";
+
+  const closeButton = document.createElement("button");
+  closeButton.type = "button";
+  closeButton.className = "image-viewer__close";
+  closeButton.textContent = "×";
+
+  content.append(image, closeButton);
+  overlay.appendChild(content);
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) {
+      closeImageViewer();
+    }
+  });
+  closeButton.addEventListener("click", closeImageViewer);
+  document.addEventListener("keydown", handleViewerKeydown, true);
+
+  imageViewerOverlay = overlay;
+  imageViewerImage = image;
+  imageViewerCloseBtn = closeButton;
+  updateImageViewerLabels();
+}
+
+function handleViewerKeydown(event) {
+  if (event.key !== "Escape") {
+    return;
+  }
+  if (!imageViewerOverlay?.classList.contains("is-visible")) {
+    return;
+  }
+  event.preventDefault();
+  closeImageViewer();
+}
+
+function openImageViewer(src, alt) {
+  if (!src) {
+    return;
+  }
+  if (!imageViewerOverlay) {
+    setupImageViewer();
+  }
+  if (!imageViewerOverlay || !imageViewerImage) {
+    return;
+  }
+  if (!imageViewerOverlay.classList.contains("is-visible")) {
+    bodyOverflowBeforeViewer = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+  }
+  imageViewerOverlay.classList.add("is-visible");
+  imageViewerOverlay.setAttribute("aria-hidden", "false");
+  imageViewerImage.src = src;
+  imageViewerImage.alt = alt || "";
+}
+
+function closeImageViewer() {
+  if (!imageViewerOverlay) {
+    return;
+  }
+  imageViewerOverlay.classList.remove("is-visible");
+  imageViewerOverlay.setAttribute("aria-hidden", "true");
+  if (imageViewerImage) {
+    imageViewerImage.src = "";
+    imageViewerImage.alt = "";
+  }
+  document.body.style.overflow = bodyOverflowBeforeViewer || "";
+  bodyOverflowBeforeViewer = "";
+}
+
+function updateImageViewerLabels() {
+  if (imageViewerCloseBtn) {
+    imageViewerCloseBtn.setAttribute(
+      "aria-label",
+      translate("imageViewerCloseLabel")
+    );
+  }
+}
+
+function renderLocalImages() {
+  if (!localListEl || !localEmptyEl) {
+    return;
+  }
+  localListEl.innerHTML = "";
+  if (!localImagesState.length) {
+    localEmptyEl.hidden = false;
+    localListEl.hidden = true;
+    return;
+  }
+  localEmptyEl.hidden = true;
+  localListEl.hidden = false;
+  const fragment = document.createDocumentFragment();
+  localImagesState.forEach((entry) => {
+    const li = document.createElement("li");
+    li.className = "local-card";
+    li.dataset.localId = entry.id;
+
+    const preview = document.createElement("div");
+    preview.className = "local-card__preview";
+    const img = document.createElement("img");
+    img.src = entry.dataUrl;
+    img.alt = entry.name;
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.dataset.fullImage = entry.dataUrl;
+    preview.appendChild(img);
+
+    const body = document.createElement("div");
+    body.className = "local-card__body";
+
+    const title = document.createElement("div");
+    title.className = "local-card__title";
+    const strong = document.createElement("strong");
+    strong.textContent = entry.name;
+    const meta = document.createElement("span");
+    meta.className = "local-card__meta";
+    meta.textContent = entry.sizeLabel;
+    title.append(strong, meta);
+
+    const actions = document.createElement("div");
+    actions.className = "local-card__actions";
+    const generateBtn = document.createElement("button");
+    generateBtn.type = "button";
+    generateBtn.dataset.action = "generateLocal";
+    generateBtn.dataset.localId = entry.id;
+    generateBtn.textContent = entry.isGenerating
+      ? translate("localGenerating")
+      : translate("localGenerateButton");
+    if (entry.isGenerating) {
+      generateBtn.disabled = true;
+      generateBtn.style.opacity = "0.6";
+    }
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.dataset.action = "removeLocal";
+    removeBtn.dataset.localId = entry.id;
+    removeBtn.textContent = translate("localRemoveButton");
+
+    actions.append(generateBtn, removeBtn);
+
+    const status = document.createElement("div");
+    status.className = "local-card__status";
+    if (entry.error) {
+      status.classList.add("local-card__status--error");
+      status.textContent = entry.error;
+    } else if (!entry.prompt) {
+      status.textContent = "";
+    }
+
+    body.append(title, actions);
+    if (entry.error) {
+      body.appendChild(status);
+    }
+
+    if (entry.prompt) {
+      const result = document.createElement("div");
+      result.className = "local-card__result";
+      const textarea = document.createElement("textarea");
+      textarea.className = "local-card__textarea";
+      textarea.readOnly = true;
+      textarea.value = entry.prompt;
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "local-card__copy";
+      copyBtn.dataset.action = "copyLocal";
+      copyBtn.dataset.localId = entry.id;
+      copyBtn.textContent = translate("localCopyButton");
+      result.append(textarea, copyBtn);
+      body.appendChild(result);
+    }
+
+    li.append(preview, body);
+    fragment.appendChild(li);
+  });
+  localListEl.appendChild(fragment);
+}
+
+function removeLocalImage(id) {
+  const index = localImagesState.findIndex((entry) => entry.id === id);
+  if (index === -1) {
+    return;
+  }
+  localImagesState.splice(index, 1);
+  renderLocalImages();
+}
+
+async function generatePromptForLocalImage(id) {
+  const entry = localImagesState.find((item) => item.id === id);
+  if (!entry || entry.isGenerating) {
+    return;
+  }
+
+  const { cancelled, instruction } = await collectCustomInstructionIfNeeded();
+  if (cancelled) {
+    return;
+  }
+
+  entry.isGenerating = true;
+  entry.error = "";
+  renderLocalImages();
+  try {
+    const response = await requestPromptForImage({
+      imageUrl: `local://${id}`,
+      imageAlt: entry.name,
+      imageMimeType: entry.mimeType,
+      imageBase64: entry.base64,
+      customInstruction: instruction
+    });
+    if (!response?.success || !response.prompt) {
+      const message = response?.error || translate("localErrorPrefix");
+      entry.error = message;
+      entry.prompt = "";
+    } else {
+      entry.prompt = response.prompt;
+      entry.error = "";
+    }
+  } catch (error) {
+    entry.error = error?.message || translate("localErrorPrefix");
+    entry.prompt = "";
+  } finally {
+    entry.isGenerating = false;
+    renderLocalImages();
+  }
+}
+
+async function collectCustomInstructionIfNeeded() {
+  if (!isCustomInstructionDialogEnabled()) {
+    return { cancelled: false, instruction: "" };
+  }
+  const value = await promptForCustomInstructionInput();
+  if (value === null) {
+    return { cancelled: true, instruction: "" };
+  }
+  return { cancelled: false, instruction: value };
+}
+
+function isCustomInstructionDialogEnabled() {
+  if (!formEl?.enableCustomPromptInput) {
+    return false;
+  }
+  return Boolean(formEl.enableCustomPromptInput.checked);
+}
+
+function promptForCustomInstructionInput() {
+  return new Promise((resolve) => {
+    const existing = document.querySelector(".i2p-dialog-backdrop");
+    if (existing) {
+      existing.remove();
+    }
+
+    const backdrop = document.createElement("div");
+    backdrop.className = "i2p-dialog-backdrop";
+
+    const dialog = document.createElement("div");
+    dialog.className = "i2p-dialog";
+
+    const title = document.createElement("h3");
+    title.className = "i2p-dialog__title";
+    title.textContent = translate("customDialogTitle");
+
+    const description = document.createElement("p");
+    description.className = "i2p-dialog__description";
+    description.textContent = translate("customDialogDescription");
+
+    const textarea = document.createElement("textarea");
+    textarea.className = "i2p-dialog__textarea";
+    textarea.placeholder = translate("customDialogPlaceholder");
+    textarea.setAttribute("aria-label", translate("customDialogTitle"));
+
+    const actions = document.createElement("div");
+    actions.className = "i2p-dialog__actions";
+
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.className =
+      "i2p-dialog__button i2p-dialog__button--secondary";
+    cancelButton.textContent = translate("customDialogCancel");
+
+    const confirmButton = document.createElement("button");
+    confirmButton.type = "button";
+    confirmButton.className =
+      "i2p-dialog__button i2p-dialog__button--primary";
+    confirmButton.textContent = translate("customDialogConfirm");
+
+    actions.append(cancelButton, confirmButton);
+    dialog.append(title, description, textarea, actions);
+    backdrop.appendChild(dialog);
+
+    const cleanup = (value) => {
+      document.removeEventListener("keydown", handleKeydown, true);
+      backdrop.remove();
+      resolve(value);
+    };
+
+    const submit = () => cleanup(textarea.value.trim());
+    const cancel = () => cleanup(null);
+
+    const handleKeydown = (event) => {
+      if (!dialog.contains(event.target)) {
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        cancel();
+      }
+      if (
+        event.key === "Enter" &&
+        (event.metaKey || event.ctrlKey) &&
+        !event.shiftKey
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        submit();
+      }
+    };
+
+    backdrop.addEventListener("click", (event) => {
+      if (event.target === backdrop) {
+        cancel();
+      }
+    });
+    cancelButton.addEventListener("click", cancel);
+    confirmButton.addEventListener("click", submit);
+
+    const host = document.body || document.documentElement;
+    if (!host) {
+      resolve(null);
+      return;
+    }
+
+    document.addEventListener("keydown", handleKeydown, true);
+    host.appendChild(backdrop);
+    requestAnimationFrame(() => {
+      textarea.focus();
+    });
+  });
+}
+
+function copyLocalPrompt(id) {
+  const entry = localImagesState.find((item) => item.id === id);
+  if (!entry?.prompt) {
+    return;
+  }
+  copyText(entry.prompt)
+    .then(() => displayStatus(statusNode, translate("localCopied")))
+    .catch(() => displayStatus(statusNode, translate("copyFailed"), true));
+}
+
+function requestPromptForImage(payload) {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage(
+      { type: "generatePrompt", ...payload },
+      (response) => {
+        if (chrome.runtime.lastError) {
+          resolve({
+            success: false,
+            error: chrome.runtime.lastError.message
+          });
+        } else {
+          resolve(response);
+        }
+      }
+    );
+  });
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function generateLocalImageId() {
+  if (crypto?.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function formatFileSize(bytes) {
+  if (!Number.isFinite(bytes)) {
+    return "";
+  }
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function copyText(value) {
+  if (navigator.clipboard?.writeText) {
+    return navigator.clipboard.writeText(value);
+  }
+  return Promise.reject(new Error("Clipboard unavailable"));
+}
+
 function restoreOptions(form, statusEl) {
   chrome.storage.sync.get(DEFAULT_CONFIG, (items) => {
     if (chrome.runtime.lastError) {
@@ -848,6 +1388,9 @@ function restoreOptions(form, statusEl) {
 
     form.promptInstruction.value =
       items.promptInstruction || DEFAULT_CONFIG.promptInstruction;
+    if (form.enableCustomPromptInput) {
+      form.enableCustomPromptInput.checked = items.enableCustomPromptInput === true;
+    }
     form.platformUrl.value =
       items.platformUrl || DEFAULT_CONFIG.platformUrl;
     form.minImageWidth.value = Number(
@@ -962,6 +1505,7 @@ function saveOptions(form, statusEl) {
 
   renderCustomPlatforms();
   renderPlatformOptions();
+  renderLocalImages();
   if (platformSelectEl) {
     platformSelectEl.value = selectedPlatformId;
   }
@@ -1011,6 +1555,8 @@ function applyLanguage(lang) {
     const currentRatio = normalizeAspectRatio(aspectRatioSelectEl.value);
     toggleCustomAspectVisibility(currentRatio === "custom");
   }
+
+  updateImageViewerLabels();
 }
 
 function updateLanguageButtons(buttons) {
@@ -1394,6 +1940,9 @@ function buildHistoryEntryNode(entry) {
     const img = document.createElement("img");
     img.src = entry.imageDataUrl;
     img.alt = entry.imageAlt || translate("historyImageAlt");
+    img.dataset.fullImage = entry.imageDataUrl;
+    img.loading = "lazy";
+    img.decoding = "async";
     preview.appendChild(img);
   } else {
     const placeholder = document.createElement("span");
@@ -1485,6 +2034,12 @@ function buildHistoryEntryNode(entry) {
 }
 
 function handleHistoryListClick(event) {
+  const previewImg = event.target.closest(".history-entry__preview img");
+  if (previewImg?.dataset.fullImage) {
+    openImageViewer(previewImg.dataset.fullImage, previewImg.alt || "");
+    return;
+  }
+
   const button = event.target.closest("button[data-action]");
   if (!button) {
     return;

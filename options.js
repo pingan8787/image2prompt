@@ -46,14 +46,14 @@ const DEFAULT_CONFIG = {
   zhipuModel: PROVIDER_DEFAULTS.zhipu.model,
   promptInstruction:
     "You are an assistant that writes high quality text-to-image prompts. Provide a single prompt that can recreate the given image faithfully.",
-  platformUrl: "https://www.midjourney.com/?prompt={{prompt}}",
+  platformUrl: "https://chatgpt.com/?prompt={{prompt}}",
   minImageWidth: 256,
   minImageHeight: 256,
   promptLanguage: "en-US",
   language: "en",
   autoOpenPlatform: true,
-  selectedPlatformId: "midjourney",
-  selectedPlatformLabel: "Midjourney",
+  selectedPlatformId: "openai",
+  selectedPlatformLabel: "OpenAI",
   customPlatforms: [],
   enableCustomPromptInput: false,
   aspectRatio: "auto",
@@ -320,6 +320,11 @@ const PROMPT_LANGUAGES = [
 ];
 
 const BUILTIN_PLATFORMS = [
+  {
+    id: "openai",
+    labels: { en: "OpenAI", zh: "OpenAI" },
+    url: "https://chatgpt.com/?prompt={{prompt}}"
+  },
   {
     id: "midjourney",
     labels: { en: "Midjourney", zh: "Midjourney" },

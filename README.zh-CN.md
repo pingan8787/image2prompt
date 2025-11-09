@@ -4,8 +4,9 @@
 
 [English](README.md)
 [中文](README.zh-CN.md)
+[主页](https://image2prompt-plugin.vercel.app/index.html)
 [Twitter](https://x.com/Chris1993Coding)
-[WiseMindAI](https://wisemindai.app/?utm_source=github-image2prompt)
+[🌟 WiseMindAI](https://wisemindai.app/?utm_source=github-image2prompt)
 
 </div>
 
@@ -33,7 +34,7 @@
 | 🔓 **开源与免费**     | 完全开源，永久免费使用                                                                        |
 | 🧮 **画面比例预设**   | 提供常见比例并支持自定义，让生成的提示词与目标画面更契合                                      |
 | 🚫 **域名过滤**       | 在指定域名的页面隐藏捕捉按钮，保持浏览体验纯净                                                |
-| 🖼️ **本地图片生成**   | 在设置页直接上传本地图片，即可生成提示词并复制                                                 |
+| 🖼️ **本地图片生成**   | 在设置页直接上传本地图片，即可生成提示词并复制                                                |
 
 ## 🌈 安装方式
 

@@ -4,8 +4,9 @@
 
 [English](README.md)
 [中文](README.zh-CN.md)
+[HomePage](https://image2prompt-plugin.vercel.app/index.html)
 [Twitter](https://x.com/Chris1993Coding)
-[WiseMindAI](https://wisemindai.app/?utm_source=github-image2prompt)
+[🌟 WiseMindAI](https://wisemindai.app/?utm_source=github-image2prompt)
 
 </div>
 
@@ -33,7 +34,7 @@ Click it, and the extension will automatically upload the image, generate a prom
 | 🔓 **Open Source & Free**   | 100% open-source and completely free to use                                                                          |
 | 🧮 **Aspect Ratio Presets** | Pick cinematic ratios or add your own so every prompt respects the frame you need                                    |
 | 🚫 **Domain Filters**       | Hide the capture button on sites you exclude so browsing stays distraction-free                                      |
-| 🖼️ **Local Uploads**        | Drop local images directly in the settings page and generate prompts without leaving the dashboard                  |
+| 🖼️ **Local Uploads**        | Drop local images directly in the settings page and generate prompts without leaving the dashboard                   |
 
 ## 🌈 Installation
 

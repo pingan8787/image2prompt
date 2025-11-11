@@ -19,6 +19,7 @@
           <a href="#section-llm" class="sidebar-link" data-i18n="llmHeading"></a>
           <a href="#section-prompt" class="sidebar-link" data-i18n="promptHeading"></a>
           <a href="#section-filter" class="sidebar-link" data-i18n="filterHeading"></a>
+          <a href="#section-button" class="sidebar-link" data-i18n="buttonAppearanceHeading"></a>
           <a href="#section-platform" class="sidebar-link" data-i18n="platformHeading"></a>
         </nav>
         <div class="sidebar-language">
@@ -153,6 +154,46 @@
             </div>
             <p class="domain-filter__empty" data-i18n="domainListEmpty"></p>
             <ul class="domain-filter__list"></ul>
+          </section>
+
+          <section class="options-section" id="section-button">
+            <div class="options-section__heading">
+              <h2 data-i18n="buttonAppearanceHeading"></h2>
+              <p data-i18n="buttonAppearanceDescription"></p>
+            </div>
+            <div class="button-appearance__actions">
+              <button type="button" class="button-appearance__reset" data-action="reset-button-appearance"
+                data-i18n="buttonAppearanceResetLabel"></button>
+            </div>
+            <div class="options-grid">
+              <label class="options-field">
+                <span data-i18n="buttonIconLabel"></span>
+                <input type="text" name="buttonIcon" maxlength="3" data-i18n="buttonIconPlaceholder"
+                  data-i18n-attr="placeholder" />
+                <small data-i18n="buttonIconHelp"></small>
+              </label>
+              <label class="options-field">
+                <span data-i18n="buttonIconColorLabel"></span>
+                <input type="color" name="buttonIconColor" />
+              </label>
+              <label class="options-field">
+                <span data-i18n="buttonBackgroundColorLabel"></span>
+                <input type="color" name="buttonBackgroundColor" />
+              </label>
+              <label class="options-field">
+                <span data-i18n="buttonShapeLabel"></span>
+                <select name="buttonShape">
+                  <option value="circle" data-i18n="buttonShapeCircle"></option>
+                  <option value="rounded" data-i18n="buttonShapeRounded"></option>
+                  <option value="square" data-i18n="buttonShapeSquare"></option>
+                </select>
+              </label>
+              <label class="options-field">
+                <span data-i18n="buttonSizeLabel"></span>
+                <input type="number" name="buttonSize" min="20" max="80" />
+                <small data-i18n="buttonSizeHelp"></small>
+              </label>
+            </div>
           </section>
 
           <section class="options-section" id="section-platform">

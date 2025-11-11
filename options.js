@@ -59,8 +59,11 @@ const DEFAULT_CONFIG = {
   aspectRatio: "auto",
   customAspectRatio: "",
   domainFilters: [],
-  aspectRatio: "auto",
-  customAspectRatio: ""
+  buttonIcon: "✎",
+  buttonIconColor: "#ffffff",
+  buttonBackgroundColor: "#2563eb",
+  buttonShape: "circle",
+  buttonSize: 32
 };
 
 const TEXT_CONTENT = {
@@ -135,6 +138,21 @@ const TEXT_CONTENT = {
     filterDescription: "Only show the button on images that meet these minimum dimensions.",
     minWidthLabel: "Minimum width (px)",
     minHeightLabel: "Minimum height (px)",
+    buttonAppearanceHeading: "Capture button",
+    buttonAppearanceDescription: "Customize the floating button shown on images.",
+    buttonIconLabel: "Button icon",
+    buttonIconPlaceholder: "e.g. ✎ or 🎨",
+    buttonIconHelp: "Use up to 3 characters or an emoji.",
+    buttonIconColorLabel: "Icon color",
+    buttonBackgroundColorLabel: "Background color",
+    buttonShapeLabel: "Button shape",
+    buttonShapeCircle: "Circle",
+    buttonShapeRounded: "Rounded square",
+    buttonShapeSquare: "Square",
+    buttonSizeLabel: "Button size (px)",
+    buttonSizeHelp: "Applies to both width and height.",
+    buttonAppearanceResetLabel: "Reset to defaults",
+    buttonAppearanceResetStatus: "Button appearance reset. Click Save to apply.",
     platformHeading: "AI Platform",
     platformDescription: "Choose where to open the generated prompt.",
     platformLabel: "Platform URL template",
@@ -249,6 +267,21 @@ const TEXT_CONTENT = {
     filterDescription: "只在满足最低尺寸的图片上显示按钮。",
     minWidthLabel: "最小宽度（像素）",
     minHeightLabel: "最小高度（像素）",
+    buttonAppearanceHeading: "按钮外观",
+    buttonAppearanceDescription: "自定义图片右下角的悬浮按钮样式。",
+    buttonIconLabel: "按钮图标",
+    buttonIconPlaceholder: "例如 ✎ 或 🎨",
+    buttonIconHelp: "支持 1-3 个字符或表情符号。",
+    buttonIconColorLabel: "图标颜色",
+    buttonBackgroundColorLabel: "背景颜色",
+    buttonShapeLabel: "按钮形状",
+    buttonShapeCircle: "圆形",
+    buttonShapeRounded: "圆角方形",
+    buttonShapeSquare: "方形",
+    buttonSizeLabel: "按钮尺寸 (px)",
+    buttonSizeHelp: "同时作用于宽度和高度。",
+    buttonAppearanceResetLabel: "恢复默认样式",
+    buttonAppearanceResetStatus: "按钮样式已恢复默认值，记得点击保存。",
     platformHeading: "AI 平台",
     platformDescription: "选择打开生成提示词的平台。",
     platformLabel: "平台链接模板",
@@ -318,6 +351,8 @@ const PROMPT_LANGUAGES = [
   { code: "id-ID", labels: { en: "Indonesian (Indonesia)", zh: "印度尼西亚语（印尼）" } },
   { code: "pl-PL", labels: { en: "Polish (Poland)", zh: "波兰语（波兰）" } }
 ];
+
+const BUTTON_SHAPES = ["circle", "rounded", "square"];
 
 const BUILTIN_PLATFORMS = [
   {
@@ -411,6 +446,7 @@ let imageViewerOverlay = null;
 let imageViewerImage = null;
 let imageViewerCloseBtn = null;
 let bodyOverflowBeforeViewer = "";
+let buttonAppearanceResetBtn = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("options-form");
@@ -445,6 +481,9 @@ document.addEventListener("DOMContentLoaded", () => {
   domainAddButton = document.querySelector(".domain-filter__add") || null;
   domainListEl = document.querySelector(".domain-filter__list") || null;
   domainEmptyEl = document.querySelector(".domain-filter__empty") || null;
+  buttonAppearanceResetBtn = document.querySelector(
+    "[data-action='reset-button-appearance']"
+  );
   localUploadInput = document.querySelector("input[name='localImageUpload']");
   localListEl = document.querySelector(".local-list");
   localEmptyEl = document.querySelector(".local-empty");
@@ -550,6 +589,11 @@ document.addEventListener("DOMContentLoaded", () => {
       switchView(targetView);
     });
   });
+  if (buttonAppearanceResetBtn) {
+    buttonAppearanceResetBtn.addEventListener("click", () => {
+      resetButtonAppearance(form, statusEl);
+    });
+  }
 
   if (historyListEl) {
     historyListEl.addEventListener("click", handleHistoryListClick);
@@ -1404,6 +1448,31 @@ function restoreOptions(form, statusEl) {
     form.minImageHeight.value = Number(
       items.minImageHeight ?? DEFAULT_CONFIG.minImageHeight
     );
+    if (form.buttonIcon) {
+      form.buttonIcon.value = sanitizeButtonIcon(
+        items.buttonIcon ?? DEFAULT_CONFIG.buttonIcon
+      );
+    }
+    if (form.buttonIconColor) {
+      form.buttonIconColor.value = sanitizeColorValue(
+        items.buttonIconColor ?? DEFAULT_CONFIG.buttonIconColor,
+        DEFAULT_CONFIG.buttonIconColor
+      );
+    }
+    if (form.buttonBackgroundColor) {
+      form.buttonBackgroundColor.value = sanitizeColorValue(
+        items.buttonBackgroundColor ?? DEFAULT_CONFIG.buttonBackgroundColor,
+        DEFAULT_CONFIG.buttonBackgroundColor
+      );
+    }
+    if (form.buttonShape) {
+      form.buttonShape.value = normalizeButtonShape(items.buttonShape);
+    }
+    if (form.buttonSize) {
+      form.buttonSize.value = clampButtonSizeValue(
+        items.buttonSize ?? DEFAULT_CONFIG.buttonSize
+      );
+    }
     if (form.autoOpenPlatform) {
       form.autoOpenPlatform.checked = items.autoOpenPlatform !== false;
     }
@@ -1483,6 +1552,21 @@ function saveOptions(form, statusEl) {
     enableCustomPromptInput: form.enableCustomPromptInput?.checked ?? false,
     aspectRatio: selectedAspectRatio,
     customAspectRatio,
+    buttonIcon: sanitizeButtonIcon(
+      form.buttonIcon?.value ?? DEFAULT_CONFIG.buttonIcon
+    ),
+    buttonIconColor: sanitizeColorValue(
+      form.buttonIconColor?.value,
+      DEFAULT_CONFIG.buttonIconColor
+    ),
+    buttonBackgroundColor: sanitizeColorValue(
+      form.buttonBackgroundColor?.value,
+      DEFAULT_CONFIG.buttonBackgroundColor
+    ),
+    buttonShape: normalizeButtonShape(form.buttonShape?.value),
+    buttonSize: clampButtonSizeValue(
+      form.buttonSize?.value ?? DEFAULT_CONFIG.buttonSize
+    ),
     language: currentLanguage
   };
   currentPromptLanguageSelection = payload.promptLanguage;
@@ -1592,6 +1676,63 @@ function clampToNumber(value, fallback) {
   const parsed = Number(value);
   if (Number.isFinite(parsed) && parsed >= 0) {
     return parsed;
+  }
+  return fallback;
+}
+
+function resetButtonAppearance(form, statusEl) {
+  if (!form) {
+    return;
+  }
+  if (form.buttonIcon) {
+    form.buttonIcon.value = DEFAULT_CONFIG.buttonIcon;
+  }
+  if (form.buttonIconColor) {
+    form.buttonIconColor.value = DEFAULT_CONFIG.buttonIconColor;
+  }
+  if (form.buttonBackgroundColor) {
+    form.buttonBackgroundColor.value = DEFAULT_CONFIG.buttonBackgroundColor;
+  }
+  if (form.buttonShape) {
+    form.buttonShape.value = DEFAULT_CONFIG.buttonShape;
+  }
+  if (form.buttonSize) {
+    form.buttonSize.value = DEFAULT_CONFIG.buttonSize;
+  }
+  displayStatus(statusEl, translate("buttonAppearanceResetStatus"));
+}
+
+function sanitizeButtonIcon(value, fallback = DEFAULT_CONFIG.buttonIcon) {
+  if (typeof value !== "string") {
+    return fallback;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return fallback;
+  }
+  const glyphs = Array.from(trimmed);
+  return glyphs.slice(0, 3).join("") || fallback;
+}
+
+function sanitizeColorValue(value, fallback = DEFAULT_CONFIG.buttonIconColor) {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimmed)) {
+      return trimmed.toLowerCase();
+    }
+  }
+  return fallback;
+}
+
+function normalizeButtonShape(value) {
+  return BUTTON_SHAPES.includes(value) ? value : DEFAULT_CONFIG.buttonShape;
+}
+
+function clampButtonSizeValue(value, fallback = DEFAULT_CONFIG.buttonSize) {
+  const parsed = Number(value);
+  if (Number.isFinite(parsed)) {
+    const clamped = Math.min(Math.max(parsed, 20), 80);
+    return clamped;
   }
   return fallback;
 }

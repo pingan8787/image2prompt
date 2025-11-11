@@ -11,24 +11,25 @@
 
 .i2p-button {
   pointer-events: auto;
-  width: 32px;
-  height: 32px;
+  width: var(--i2p-button-size, 32px);
+  height: var(--i2p-button-size, 32px);
   border: none;
-  border-radius: 50%;
+  border-radius: var(--i2p-button-radius, 50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  background: rgba(37, 99, 235, 0.92);
-  color: #ffffff;
+  background: var(--i2p-button-background, rgba(37, 99, 235, 0.92));
+  color: var(--i2p-button-icon-color, #ffffff);
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease, filter 0.2s ease;
   box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
 }
 
-.i2p-button:hover {
-  background: rgba(37, 99, 235, 1);
+.i2p-button:hover:not(:disabled) {
+  background: var(--i2p-button-background, rgba(37, 99, 235, 0.92));
   transform: translateY(-1px);
+  filter: brightness(1.05);
 }
 
 .i2p-button:disabled {
@@ -36,7 +37,8 @@
   opacity: 0.7;
   transform: none;
   box-shadow: none;
-  background: rgba(148, 163, 184, 0.75);
+  background: var(--i2p-button-background, rgba(37, 99, 235, 0.92));
+  filter: grayscale(0.2);
 }
 
 .i2p-button__icon {
@@ -45,9 +47,10 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  font-size: 16px;
+  font-size: var(--i2p-button-icon-size, 16px);
   line-height: 1;
   pointer-events: none;
+  color: inherit;
 }
 
 .i2p-button.is-loading .i2p-button__icon {
@@ -57,21 +60,18 @@
 .i2p-button::after {
   content: "";
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  margin: auto;
+  width: var(--i2p-spinner-size, 18px);
+  height: var(--i2p-spinner-size, 18px);
   border-radius: 50%;
   border: 2px solid transparent;
-  border-top-color: #ffffff;
+  border-top-color: var(--i2p-button-spinner-color, #ffffff);
   opacity: 0;
   transition: opacity 0.15s ease;
 }
 
 .i2p-button.is-loading::after {
-  width: 18px;
-  height: 18px;
   opacity: 1;
   animation: i2p-spin 0.8s linear infinite;
 }

@@ -28,16 +28,25 @@ const DEFAULT_CONFIG = {
   enableCustomPromptInput: false,
   aspectRatio: "auto",
   customAspectRatio: "",
-  domainFilters: []
+  domainFilters: [],
+  buttonIcon: "✎",
+  buttonIconColor: "#ffffff",
+  buttonBackgroundColor: "#2563eb",
+  buttonShape: "circle",
+  buttonSize: 32
 };
 
 const BUTTON_CLASS = "i2p-button";
 const OVERLAY_CLASS = "i2p-overlay";
 const DATASET_KEY = "i2pTracked";
-const BUTTON_ICON = "✎";
 const CUSTOM_DIALOG_BACKDROP_CLASS = "i2p-dialog-backdrop";
 const CUSTOM_DIALOG_CLASS = "i2p-dialog";
 const CURRENT_HOSTNAME = normalizeHostname(window.location.hostname || "");
+const BUTTON_RADIUS_MAP = {
+  circle: "50%",
+  rounded: "16px",
+  square: "6px"
+};
 
 const UI_STRINGS = {
   en: {
@@ -129,33 +138,42 @@ function watchForConfigChanges() {
       return;
     }
 
-    let shouldReevaluate = false;
-    let shouldUpdateLabels = false;
-    for (const [key, change] of Object.entries(changes)) {
-      if (key === "domainFilters") {
-        config.domainFilters = sanitizeDomainFilters(change.newValue);
-        shouldReevaluate = true;
-        continue;
-      }
-      config[key] = change.newValue ?? DEFAULT_CONFIG[key];
-      if (key === "minImageWidth" || key === "minImageHeight") {
-        shouldReevaluate = true;
-      }
-      if (key === "language") {
-        shouldUpdateLabels = true;
-      }
-      if (key === "enableCustomPromptInput") {
-        shouldUpdateLabels = true;
-      }
+  let shouldReevaluate = false;
+  let shouldUpdateButtons = false;
+  for (const [key, change] of Object.entries(changes)) {
+    if (key === "domainFilters") {
+      config.domainFilters = sanitizeDomainFilters(change.newValue);
+      shouldReevaluate = true;
+      continue;
     }
+    config[key] = change.newValue ?? DEFAULT_CONFIG[key];
+    if (key === "minImageWidth" || key === "minImageHeight") {
+      shouldReevaluate = true;
+    }
+    if (key === "language") {
+      shouldUpdateButtons = true;
+    }
+    if (key === "enableCustomPromptInput") {
+      shouldUpdateButtons = true;
+    }
+    if (
+      key === "buttonIcon" ||
+      key === "buttonIconColor" ||
+      key === "buttonBackgroundColor" ||
+      key === "buttonShape" ||
+      key === "buttonSize"
+    ) {
+      shouldUpdateButtons = true;
+    }
+  }
 
-    if (shouldReevaluate) {
-      refreshAllImages();
-    }
-    if (shouldUpdateLabels) {
-      updateAllButtonLabels();
-    }
-  });
+  if (shouldReevaluate) {
+    refreshAllImages();
+  }
+  if (shouldUpdateButtons) {
+    updateAllButtonLabels();
+  }
+});
 }
 
 function observeDomMutations() {
@@ -724,7 +742,81 @@ function applyButtonLabels(button) {
     button.appendChild(icon);
   }
   icon.setAttribute("aria-hidden", "true");
-  icon.textContent = BUTTON_ICON;
+  icon.textContent = getButtonIconText();
+  applyButtonAppearance(button);
+}
+
+function getButtonIconText() {
+  const raw = typeof config.buttonIcon === "string" ? config.buttonIcon.trim() : "";
+  if (!raw) {
+    return DEFAULT_CONFIG.buttonIcon;
+  }
+  const glyphs = Array.from(raw);
+  return glyphs.slice(0, 3).join("") || DEFAULT_CONFIG.buttonIcon;
+}
+
+function applyButtonAppearance(button) {
+  if (!button) {
+    return;
+  }
+  const size = clampButtonSize(config.buttonSize);
+  const background = getButtonBackgroundColor();
+  const iconColor = getButtonIconColor();
+  const radius = getButtonBorderRadius();
+  const iconSize = Math.max(Math.round(size * 0.5), 12);
+  const spinnerSize = Math.max(Math.round(size * 0.55), 12);
+
+  button.style.setProperty("--i2p-button-size", `${size}px`);
+  button.style.setProperty("--i2p-button-background", background);
+  button.style.setProperty("--i2p-button-radius", radius);
+  button.style.setProperty("--i2p-button-icon-color", iconColor);
+  button.style.setProperty("--i2p-button-icon-size", `${iconSize}px`);
+  button.style.setProperty("--i2p-spinner-size", `${spinnerSize}px`);
+  button.style.setProperty("--i2p-button-spinner-color", iconColor);
+}
+
+function getButtonBackgroundColor() {
+  return sanitizeCssColor(
+    config.buttonBackgroundColor,
+    DEFAULT_CONFIG.buttonBackgroundColor
+  );
+}
+
+function getButtonIconColor() {
+  return sanitizeCssColor(config.buttonIconColor, DEFAULT_CONFIG.buttonIconColor);
+}
+
+function getButtonBorderRadius() {
+  const shape = normalizeButtonShape(config.buttonShape);
+  return BUTTON_RADIUS_MAP[shape] || BUTTON_RADIUS_MAP[DEFAULT_CONFIG.buttonShape] || "50%";
+}
+
+function clampButtonSize(value) {
+  const parsed = Number(value);
+  if (Number.isFinite(parsed)) {
+    return Math.min(Math.max(parsed, 20), 80);
+  }
+  return DEFAULT_CONFIG.buttonSize;
+}
+
+function sanitizeCssColor(value, fallback) {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(trimmed)) {
+      return trimmed;
+    }
+  }
+  return fallback;
+}
+
+function normalizeButtonShape(value) {
+  if (typeof value !== "string") {
+    return DEFAULT_CONFIG.buttonShape;
+  }
+  const normalized = value.trim().toLowerCase();
+  return normalized === "rounded" || normalized === "square" || normalized === "circle"
+    ? normalized
+    : DEFAULT_CONFIG.buttonShape;
 }
 
 function getUiLanguage() {

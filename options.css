@@ -835,6 +835,11 @@ body {
   transition: border 0.2s ease, box-shadow 0.2s ease;
 }
 
+.options-field input[type="color"] {
+  padding: 4px;
+  height: 48px;
+}
+
 .options-field select {
   appearance: none;
   background-image: linear-gradient(
@@ -856,6 +861,35 @@ body {
 
 .options-field[data-custom-aspect-wrapper]:not([hidden]) {
   display: flex;
+}
+
+.button-appearance__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.button-appearance__reset {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(15, 23, 42, 0.08);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.button-appearance__reset:hover,
+.button-appearance__reset:focus-visible {
+  background: rgba(59, 130, 246, 0.18);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.button-appearance__reset:active {
+  transform: translateY(0);
 }
 
 .domain-filter__control {

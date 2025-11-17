@@ -20,6 +20,8 @@ const DEFAULT_CONFIG = {
   minImageWidth: 256,
   minImageHeight: 256,
   promptLanguage: "en-US",
+  removeWatermark: false,
+  imageTextTranslationTarget: "",
   language: "en",
   autoOpenPlatform: true,
   selectedPlatformId: "openai",

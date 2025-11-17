@@ -50,6 +50,8 @@ const DEFAULT_CONFIG = {
   minImageWidth: 256,
   minImageHeight: 256,
   promptLanguage: "en-US",
+  removeWatermark: false,
+  imageTextTranslationTarget: "",
   language: "en",
   autoOpenPlatform: true,
   selectedPlatformId: "openai",
@@ -98,6 +100,11 @@ const TEXT_CONTENT = {
     promptLanguageHelp: "The model replies in the selected locale.",
     customPromptToggleLabel: "Enable custom instructions dialog",
     customPromptToggleHelp: "Ask for extra instructions before generating a prompt.",
+    removeWatermarkLabel: "Remove watermarks",
+    removeWatermarkHelp: "Tell the model to remove watermarks/logos from the generated scene.",
+    imageTextTranslationLabel: "Translate image text to",
+    imageTextTranslationHelp: "Translate any detected text into the selected language before returning the prompt.",
+    imageTextTranslationNone: "Keep original language",
     customDialogTitle: "Add custom instructions",
     customDialogDescription:
       "Optional: describe per-image tweaks before the model crafts the prompt.",
@@ -229,6 +236,11 @@ const TEXT_CONTENT = {
     promptLanguageHelp: "模型会按照所选的语言返回提示词。",
     customPromptToggleLabel: "启用自定义指令输入",
     customPromptToggleHelp: "生成前先弹出输入框，让你补充额外说明。",
+    removeWatermarkLabel: "图片去水印",
+    removeWatermarkHelp: "提示模型自动去除或忽略图片上的水印和 Logo，避免生成结果带水印。",
+    imageTextTranslationLabel: "图片文本翻译",
+    imageTextTranslationHelp: "将图片中的文字翻译成所选语言后再生成提示词。",
+    imageTextTranslationNone: "保持原文",
     customDialogTitle: "补充自定义说明",
     customDialogDescription: "（可选）填写本次生成的额外需求，再交给模型生成提示词。",
     customDialogPlaceholder: "示例：把背景改成赛博朋克风格的霓虹城市。",
@@ -399,7 +411,9 @@ const BUILTIN_PLATFORMS = [
 
 let currentLanguage = DEFAULT_CONFIG.language;
 let currentPromptLanguageSelection = DEFAULT_CONFIG.promptLanguage;
+let currentImageTextTranslationSelection = DEFAULT_CONFIG.imageTextTranslationTarget;
 let promptLanguageSelectEl = null;
+let imageTextTranslationSelectEl = null;
 let providerSelectEl = null;
 let providerApiKeyInput = null;
 let providerModelInput = null;
@@ -517,6 +531,15 @@ document.addEventListener("DOMContentLoaded", () => {
     promptLanguageSelectEl.addEventListener("change", (event) => {
       const value = event.target.value;
       currentPromptLanguageSelection = normalizePromptLanguage(value);
+    });
+  }
+
+  imageTextTranslationSelectEl = form?.imageTextTranslationTarget || null;
+  if (imageTextTranslationSelectEl) {
+    imageTextTranslationSelectEl.addEventListener("change", (event) => {
+      const value = event.target.value;
+      currentImageTextTranslationSelection =
+        normalizeImageTextTranslationTarget(value);
     });
   }
 
@@ -1412,6 +1435,9 @@ function restoreOptions(form, statusEl) {
     currentPromptLanguageSelection = normalizePromptLanguage(
       items.promptLanguage
     );
+    currentImageTextTranslationSelection = normalizeImageTextTranslationTarget(
+      items.imageTextTranslationTarget
+    );
     providerSettingsState = sanitizeProviderSettings(
       items.providerSettings,
       items
@@ -1439,6 +1465,9 @@ function restoreOptions(form, statusEl) {
       items.promptInstruction || DEFAULT_CONFIG.promptInstruction;
     if (form.enableCustomPromptInput) {
       form.enableCustomPromptInput.checked = items.enableCustomPromptInput === true;
+    }
+    if (form.removeWatermark) {
+      form.removeWatermark.checked = items.removeWatermark === true;
     }
     form.platformUrl.value =
       items.platformUrl || DEFAULT_CONFIG.platformUrl;
@@ -1486,6 +1515,9 @@ function restoreOptions(form, statusEl) {
     }
     if (promptLanguageSelectEl) {
       promptLanguageSelectEl.value = currentPromptLanguageSelection;
+    }
+    if (imageTextTranslationSelectEl) {
+      imageTextTranslationSelectEl.value = currentImageTextTranslationSelection;
     }
     updateProviderInfoContent();
     updateProviderFieldPlaceholders();
@@ -1550,6 +1582,11 @@ function saveOptions(form, statusEl) {
     ),
     autoOpenPlatform: form.autoOpenPlatform?.checked ?? true,
     enableCustomPromptInput: form.enableCustomPromptInput?.checked ?? false,
+    removeWatermark: form.removeWatermark?.checked ?? DEFAULT_CONFIG.removeWatermark,
+    imageTextTranslationTarget: normalizeImageTextTranslationTarget(
+      form.imageTextTranslationTarget?.value ??
+        DEFAULT_CONFIG.imageTextTranslationTarget
+    ),
     aspectRatio: selectedAspectRatio,
     customAspectRatio,
     buttonIcon: sanitizeButtonIcon(
@@ -1570,6 +1607,7 @@ function saveOptions(form, statusEl) {
     language: currentLanguage
   };
   currentPromptLanguageSelection = payload.promptLanguage;
+  currentImageTextTranslationSelection = payload.imageTextTranslationTarget;
   selectedPlatformId = normalizePlatformId(selectedPlatformId);
 
   if (selectedPlatformId.startsWith("custom-")) {
@@ -1615,6 +1653,7 @@ function applyLanguage(lang) {
   document.documentElement.lang = normalized === "zh" ? "zh-CN" : "en";
   document.title = dictionary.title;
   renderPromptLanguageOptions(promptLanguageSelectEl);
+  renderImageTextTranslationOptions(imageTextTranslationSelectEl);
   renderProviderOptions();
   renderCustomPlatforms();
   renderPlatformOptions();
@@ -1665,6 +1704,14 @@ function normalizeLanguage(value) {
 function normalizePromptLanguage(value) {
   const match = PROMPT_LANGUAGES.find((entry) => entry.code === value);
   return match ? match.code : DEFAULT_CONFIG.promptLanguage;
+}
+
+function normalizeImageTextTranslationTarget(value) {
+  if (!value) {
+    return DEFAULT_CONFIG.imageTextTranslationTarget;
+  }
+  const match = PROMPT_LANGUAGES.find((entry) => entry.code === value);
+  return match ? match.code : DEFAULT_CONFIG.imageTextTranslationTarget;
 }
 
 function translate(key) {
@@ -1755,6 +1802,30 @@ function renderPromptLanguageOptions(select) {
   }
   const targetValue = normalizePromptLanguage(currentPromptLanguageSelection);
   const frag = document.createDocumentFragment();
+  PROMPT_LANGUAGES.forEach((entry) => {
+    const option = document.createElement("option");
+    option.value = entry.code;
+    option.textContent =
+      entry.labels[currentLanguage] ?? entry.labels.en ?? entry.code;
+    frag.appendChild(option);
+  });
+  select.innerHTML = "";
+  select.appendChild(frag);
+  select.value = targetValue;
+}
+
+function renderImageTextTranslationOptions(select) {
+  if (!select) {
+    return;
+  }
+  const targetValue = normalizeImageTextTranslationTarget(
+    currentImageTextTranslationSelection
+  );
+  const frag = document.createDocumentFragment();
+  const noneOption = document.createElement("option");
+  noneOption.value = "";
+  noneOption.textContent = translate("imageTextTranslationNone");
+  frag.appendChild(noneOption);
   PROMPT_LANGUAGES.forEach((entry) => {
     const option = document.createElement("option");
     option.value = entry.code;

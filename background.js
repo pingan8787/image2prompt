@@ -24,6 +24,8 @@ const DEFAULT_CONFIG = {
   minImageWidth: 256,
   minImageHeight: 256,
   promptLanguage: "en-US",
+  removeWatermark: false,
+  imageTextTranslationTarget: "",
   language: "en",
   autoOpenPlatform: true,
   selectedPlatformId: "openai",
@@ -195,6 +197,19 @@ async function handleGeneratePrompt(message, sender) {
   const customInstructionParts = [];
   if (aspectInstruction) {
     customInstructionParts.push(aspectInstruction);
+  }
+  if (config.removeWatermark) {
+    customInstructionParts.push(
+      "Remove any watermark, platform logo, signature, photographer credit, or similar artifacts from the generated composition so the final result looks clean."
+    );
+  }
+  if (config.imageTextTranslationTarget) {
+    const translationLabel = getPromptLanguageName(
+      config.imageTextTranslationTarget
+    );
+    customInstructionParts.push(
+      `If the source image contains text, translate that text into ${translationLabel} and describe it using the translated wording in the final prompt.`
+    );
   }
   if (runtimeInstruction) {
     customInstructionParts.push(runtimeInstruction);
@@ -720,6 +735,10 @@ function sanitizeConfig(raw) {
   merged.zhipuApiKey = providerSettings.zhipu.apiKey;
   merged.zhipuModel = providerSettings.zhipu.model;
   merged.enableCustomPromptInput = merged.enableCustomPromptInput === true;
+  merged.removeWatermark = raw?.removeWatermark === true;
+  merged.imageTextTranslationTarget = normalizeImageTextTranslationTarget(
+    raw?.imageTextTranslationTarget
+  );
   merged.aspectRatio = normalizeAspectRatio(raw?.aspectRatio);
   merged.customAspectRatio = merged.aspectRatio === "custom"
     ? sanitizeAspectRatio(raw?.customAspectRatio)
@@ -745,6 +764,19 @@ function normalizeAspectRatio(value) {
     return DEFAULT_CONFIG.aspectRatio;
   }
   return allowed.has(value) ? value : DEFAULT_CONFIG.aspectRatio;
+}
+
+function normalizeImageTextTranslationTarget(value) {
+  if (typeof value !== "string") {
+    return DEFAULT_CONFIG.imageTextTranslationTarget;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return DEFAULT_CONFIG.imageTextTranslationTarget;
+  }
+  return Object.prototype.hasOwnProperty.call(PROMPT_LANGUAGE_RULES, trimmed)
+    ? trimmed
+    : DEFAULT_CONFIG.imageTextTranslationTarget;
 }
 
 function sanitizeAspectRatio(value) {
@@ -794,6 +826,13 @@ function appendAspectRatioToPrompt(prompt, aspectRatio, customAspectRatio) {
     return prompt;
   }
   return `${prompt}\n\nAspect ratio: ${ratioValue}`;
+}
+
+function getPromptLanguageName(code) {
+  if (!code) {
+    return "";
+  }
+  return PROMPT_LANGUAGE_RULES[code]?.name || code;
 }
 
 function sanitizeDomainFilters(list) {

@@ -30,6 +30,7 @@ const DEFAULT_CONFIG = {
   enableCustomPromptInput: false,
   aspectRatio: "auto",
   customAspectRatio: "",
+  promptRichness: "standard",
   domainFilters: [],
   buttonIcon: "✎",
   buttonIconColor: "#ffffff",

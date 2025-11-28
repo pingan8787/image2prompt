@@ -60,6 +60,7 @@ const DEFAULT_CONFIG = {
   enableCustomPromptInput: false,
   aspectRatio: "auto",
   customAspectRatio: "",
+  promptRichness: "standard",
   domainFilters: [],
   buttonIcon: "✎",
   buttonIconColor: "#ffffff",
@@ -105,6 +106,12 @@ const TEXT_CONTENT = {
     imageTextTranslationLabel: "Translate image text to",
     imageTextTranslationHelp: "Translate any detected text into the selected language before returning the prompt.",
     imageTextTranslationNone: "Keep original language",
+    promptRichnessLabel: "Prompt richness",
+    promptRichnessHelp: "Control the level of detail in generated prompts. Higher richness produces more descriptive and comprehensive prompts.",
+    promptRichnessConcise: "Concise",
+    promptRichnessStandard: "Standard",
+    promptRichnessDetailed: "Detailed",
+    promptRichnessVeryDetailed: "Very detailed",
     customDialogTitle: "Add custom instructions",
     customDialogDescription:
       "Optional: describe per-image tweaks before the model crafts the prompt.",
@@ -241,6 +248,12 @@ const TEXT_CONTENT = {
     imageTextTranslationLabel: "图片文本翻译",
     imageTextTranslationHelp: "将图片中的文字翻译成所选语言后再生成提示词。",
     imageTextTranslationNone: "保持原文",
+    promptRichnessLabel: "提示词丰富度",
+    promptRichnessHelp: "控制生成提示词的详细程度。丰富度越高，生成的提示词越详细、越全面。",
+    promptRichnessConcise: "简洁",
+    promptRichnessStandard: "标准",
+    promptRichnessDetailed: "详细",
+    promptRichnessVeryDetailed: "非常详细",
     customDialogTitle: "补充自定义说明",
     customDialogDescription: "（可选）填写本次生成的额外需求，再交给模型生成提示词。",
     customDialogPlaceholder: "示例：把背景改成赛博朋克风格的霓虹城市。",
@@ -1519,6 +1532,11 @@ function restoreOptions(form, statusEl) {
     if (imageTextTranslationSelectEl) {
       imageTextTranslationSelectEl.value = currentImageTextTranslationSelection;
     }
+    if (form.promptRichness) {
+      form.promptRichness.value = normalizePromptRichness(
+        items.promptRichness ?? DEFAULT_CONFIG.promptRichness
+      );
+    }
     updateProviderInfoContent();
     updateProviderFieldPlaceholders();
     renderCustomPlatforms();
@@ -1586,6 +1604,9 @@ function saveOptions(form, statusEl) {
     imageTextTranslationTarget: normalizeImageTextTranslationTarget(
       form.imageTextTranslationTarget?.value ??
         DEFAULT_CONFIG.imageTextTranslationTarget
+    ),
+    promptRichness: normalizePromptRichness(
+      form.promptRichness?.value ?? DEFAULT_CONFIG.promptRichness
     ),
     aspectRatio: selectedAspectRatio,
     customAspectRatio,
@@ -1712,6 +1733,14 @@ function normalizeImageTextTranslationTarget(value) {
   }
   const match = PROMPT_LANGUAGES.find((entry) => entry.code === value);
   return match ? match.code : DEFAULT_CONFIG.imageTextTranslationTarget;
+}
+
+function normalizePromptRichness(value) {
+  const allowed = new Set(["concise", "standard", "detailed", "very-detailed"]);
+  if (typeof value === "string" && allowed.has(value)) {
+    return value;
+  }
+  return DEFAULT_CONFIG.promptRichness;
 }
 
 function translate(key) {

@@ -33,7 +33,8 @@ const DEFAULT_CONFIG = {
   customPlatforms: [],
   enableCustomPromptInput: false,
   aspectRatio: "auto",
-  customAspectRatio: ""
+  customAspectRatio: "",
+  promptRichness: "standard"
 };
 
 const HISTORY_STORAGE_KEY = "generationHistory";
@@ -185,7 +186,11 @@ async function handleGeneratePrompt(message, sender) {
   }
   const imageData = await getImageDataFromMessage(message);
   const languageDirective = getLanguageDirective(config.promptLanguage);
-  const instruction = config.promptInstruction || DEFAULT_CONFIG.promptInstruction;
+  const baseInstruction = config.promptInstruction || DEFAULT_CONFIG.promptInstruction;
+  const richnessInstruction = getRichnessInstruction(config.promptRichness);
+  const instruction = richnessInstruction 
+    ? `${baseInstruction}\n\n${richnessInstruction}`
+    : baseInstruction;
   const runtimeInstruction =
     typeof message.customInstruction === "string"
       ? message.customInstruction.trim()
@@ -743,6 +748,7 @@ function sanitizeConfig(raw) {
   merged.customAspectRatio = merged.aspectRatio === "custom"
     ? sanitizeAspectRatio(raw?.customAspectRatio)
     : "";
+  merged.promptRichness = normalizePromptRichness(raw?.promptRichness);
   merged.domainFilters = sanitizeDomainFilters(raw?.domainFilters);
   return merged;
 }
@@ -833,6 +839,25 @@ function getPromptLanguageName(code) {
     return "";
   }
   return PROMPT_LANGUAGE_RULES[code]?.name || code;
+}
+
+function getRichnessInstruction(richness) {
+  const normalized = normalizePromptRichness(richness);
+  const instructions = {
+    "concise": "Generate a concise, brief prompt with only essential details. Keep it short and to the point.",
+    "standard": "Generate a standard prompt with balanced detail. Include important visual elements and composition.",
+    "detailed": "Generate a detailed prompt with comprehensive descriptions. Include colors, lighting, style, mood, and composition details.",
+    "very-detailed": "Generate a very detailed and comprehensive prompt. Include extensive descriptions of colors, lighting, shadows, textures, style, mood, composition, perspective, atmosphere, and all visual elements. Be thorough and descriptive."
+  };
+  return instructions[normalized] || instructions["standard"];
+}
+
+function normalizePromptRichness(value) {
+  const allowed = new Set(["concise", "standard", "detailed", "very-detailed"]);
+  if (typeof value === "string" && allowed.has(value)) {
+    return value;
+  }
+  return DEFAULT_CONFIG.promptRichness || "standard";
 }
 
 function sanitizeDomainFilters(list) {

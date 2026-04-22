@@ -1,41 +1,15 @@
-const DEFAULT_PROVIDER_ID = "gemini";
+import {
+  DEFAULT_PROVIDER_ID,
+  PROVIDER_DEFAULTS,
+  createDefaultProviderSettings,
+  getProviderById,
+  getProviderList,
+  inferProviderIdFromName,
+  normalizeProviderId,
+  hasPresetModel
+} from "./provider-catalog.js";
 
-const PROVIDER_DEFAULTS = {
-  gemini: {
-    apiKey: "",
-    model: "gemini-2.5-flash"
-  },
-  zhipu: {
-    apiKey: "",
-    model: "glm-4v-plus"
-  }
-};
-
-const LLM_PROVIDERS = [
-  {
-    id: "gemini",
-    labelKey: "providerGeminiLabel",
-    descriptionKey: "providerGeminiDescription",
-    keyLink: "https://aistudio.google.com/app/api-keys",
-    keyLinkLabelKey: "providerGeminiLink",
-    defaultModel: PROVIDER_DEFAULTS.gemini.model,
-    apiKeyPlaceholderKey: "apiKeyPlaceholderGemini",
-    apiKeyHelpKey: "apiKeyHelpGemini",
-    modelPlaceholderKey: "modelPlaceholderGemini"
-  },
-  {
-    id: "zhipu",
-    labelKey: "providerZhipuLabel",
-    descriptionKey: "providerZhipuDescription",
-    keyLink: "https://open.bigmodel.cn/usercenter/apikeys",
-    keyLinkLabelKey: "providerZhipuLink",
-    docsLink: "https://docs.bigmodel.cn/cn/guide/start/model-overview",
-    defaultModel: PROVIDER_DEFAULTS.zhipu.model,
-    apiKeyPlaceholderKey: "apiKeyPlaceholderZhipu",
-    apiKeyHelpKey: "apiKeyHelpZhipu",
-    modelPlaceholderKey: "modelPlaceholderZhipu"
-  }
-];
+const LLM_PROVIDERS = getProviderList();
 
 const DEFAULT_CONFIG = {
   llmProvider: DEFAULT_PROVIDER_ID,
@@ -62,21 +36,25 @@ const DEFAULT_CONFIG = {
   customAspectRatio: "",
   promptRichness: "standard",
   domainFilters: [],
-  buttonIcon: "✎",
+  buttonIcon: "✦",
   buttonIconColor: "#ffffff",
-  buttonBackgroundColor: "#2563eb",
-  buttonShape: "circle",
-  buttonSize: 32
+  buttonBackgroundColor: "#155eef",
+  buttonShape: "rounded",
+  buttonSize: 34
 };
 
 const TEXT_CONTENT = {
   en: {
     title: "image2prompt",
-    subtitle: "Configure how prompts are generated and shared.",
+    subtitle: "Shape a faster, cleaner workflow for turning any image into a reusable prompt.",
+    heroEyebrow: "Creative Control Center",
+    heroStatProviders: "Providers ready",
+    heroStatModels: "Preset models",
+    heroStatWorkflow: "Core workflows",
     githubCta: "View on GitHub",
     languageLabel: "Language",
     llmHeading: "Model provider",
-    llmDescription: "Choose which large language model generates prompts.",
+    llmDescription: "Pick the engine, save its key, and switch models without typing them from memory.",
     llmProviderLabel: "AI provider",
     llmProviderHelp: "Each provider stores its own API key and model identifier.",
     providerGeminiLabel: "Google Gemini",
@@ -93,6 +71,12 @@ const TEXT_CONTENT = {
     modelLabel: "Model identifier",
     modelPlaceholderGemini: "gemini-2.5-flash",
     modelPlaceholderZhipu: "glm-4v-plus",
+    providerDocsLabel: "Model docs",
+    modelPresetLabel: "Preset model list",
+    modelPresetHelp: "Choose a built-in model, then fine-tune it below if needed.",
+    modelCustomLabel: "Model identifier",
+    modelCustomHelp: "You can keep editing the model identifier manually.",
+    modelPresetCustomOption: "Custom model",
     promptHeading: "Prompt Generation",
     promptDescription: "Tune the guidance sent to the model.",
     instructionLabel: "System prompt",
@@ -167,6 +151,8 @@ const TEXT_CONTENT = {
     buttonSizeHelp: "Applies to both width and height.",
     buttonAppearanceResetLabel: "Reset to defaults",
     buttonAppearanceResetStatus: "Button appearance reset. Click Save to apply.",
+    buttonPreviewLabel: "Live preview",
+    buttonPreviewHint: "This is how the capture button will look on images.",
     platformHeading: "AI Platform",
     platformDescription: "Choose where to open the generated prompt.",
     platformLabel: "Platform URL template",
@@ -214,11 +200,15 @@ const TEXT_CONTENT = {
   },
   zh: {
     title: "图像提示词助手",
-    subtitle: "设置提示词的生成方式与跳转平台。",
+    subtitle: "把图片转提示词这件事，整理成更顺手、更清晰的一套工作流。",
+    heroEyebrow: "创作控制台",
+    heroStatProviders: "已接入提供商",
+    heroStatModels: "可选预设模型",
+    heroStatWorkflow: "核心工作流",
     githubCta: "访问 GitHub 仓库",
     languageLabel: "界面语言",
     llmHeading: "大模型设置",
-    llmDescription: "选择用于生成提示词的大语言模型。",
+    llmDescription: "直接切换提供商和模型，不用每次手动查模型名再填写。",
     llmProviderLabel: "模型提供商",
     llmProviderHelp: "不同提供商可以分别保存自己的 API 密钥和模型名称。",
     providerGeminiLabel: "Google Gemini",
@@ -235,6 +225,12 @@ const TEXT_CONTENT = {
     modelLabel: "模型标识",
     modelPlaceholderGemini: "gemini-2.5-flash",
     modelPlaceholderZhipu: "glm-4v-plus",
+    providerDocsLabel: "模型文档",
+    modelPresetLabel: "预设模型列表",
+    modelPresetHelp: "先直接选，再按需继续微调下面的模型标识。",
+    modelCustomLabel: "模型标识",
+    modelCustomHelp: "如果你有特殊版本，也可以继续手动输入。",
+    modelPresetCustomOption: "自定义模型",
     promptHeading: "提示词生成",
     promptDescription: "自定义发送给模型的整体指导。",
     instructionLabel: "系统提示词",
@@ -307,6 +303,8 @@ const TEXT_CONTENT = {
     buttonSizeHelp: "同时作用于宽度和高度。",
     buttonAppearanceResetLabel: "恢复默认样式",
     buttonAppearanceResetStatus: "按钮样式已恢复默认值，记得点击保存。",
+    buttonPreviewLabel: "实时预览",
+    buttonPreviewHint: "这里展示图片右下角按钮的大致效果。",
     platformHeading: "AI 平台",
     platformDescription: "选择打开生成提示词的平台。",
     platformLabel: "平台链接模板",
@@ -429,12 +427,16 @@ let promptLanguageSelectEl = null;
 let imageTextTranslationSelectEl = null;
 let providerSelectEl = null;
 let providerApiKeyInput = null;
+let providerModelPresetSelectEl = null;
 let providerModelInput = null;
 let providerApiKeyHelpEl = null;
 let providerInfoContainer = null;
 let providerInfoDescriptionEl = null;
 let providerInfoPrimaryLink = null;
 let providerInfoPrimaryLabel = null;
+let providerInfoDocsLink = null;
+let providerInfoNameEl = null;
+let providerInfoModelCountEl = null;
 let platformSelectEl = null;
 let customListEl = null;
 let customEmptyEl = null;
@@ -474,6 +476,10 @@ let imageViewerImage = null;
 let imageViewerCloseBtn = null;
 let bodyOverflowBeforeViewer = "";
 let buttonAppearanceResetBtn = null;
+let buttonPreviewButton = null;
+let heroProviderCountEl = null;
+let heroModelCountEl = null;
+let heroWorkflowCountEl = null;
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("options-form");
@@ -516,6 +522,7 @@ document.addEventListener("DOMContentLoaded", () => {
   localEmptyEl = document.querySelector(".local-empty");
   providerSelectEl = form?.llmProvider || null;
   providerApiKeyInput = form?.providerApiKey || null;
+  providerModelPresetSelectEl = form?.providerModelPreset || null;
   providerModelInput = form?.providerModel || null;
   providerApiKeyHelpEl = document.querySelector("[data-provider-help='apiKey']");
   providerInfoContainer = document.querySelector("[data-provider-info]") || null;
@@ -528,6 +535,19 @@ document.addEventListener("DOMContentLoaded", () => {
   providerInfoPrimaryLabel = providerInfoPrimaryLink?.querySelector(
     ".provider-info__label"
   ) || null;
+  providerInfoDocsLink = providerInfoContainer?.querySelector(
+    ".provider-info__docs"
+  ) || null;
+  providerInfoNameEl = providerInfoContainer?.querySelector(
+    "[data-provider-name]"
+  ) || null;
+  providerInfoModelCountEl = providerInfoContainer?.querySelector(
+    "[data-provider-model-count]"
+  ) || null;
+  buttonPreviewButton = document.querySelector("[data-button-preview]") || null;
+  heroProviderCountEl = document.querySelector("[data-hero-providers]") || null;
+  heroModelCountEl = document.querySelector("[data-hero-models]") || null;
+  heroWorkflowCountEl = document.querySelector("[data-hero-workflows]") || null;
   const sidebarLinks = Array.from(
     document.querySelectorAll(".sidebar-nav a")
   );
@@ -573,14 +593,26 @@ document.addEventListener("DOMContentLoaded", () => {
       const nextProvider = normalizeProviderId(event.target.value);
       persistCurrentProviderInputs(form);
       if (nextProvider === currentProviderId) {
+        syncProviderModelControls();
         updateProviderInfoContent();
         updateProviderFieldPlaceholders();
         return;
       }
       currentProviderId = nextProvider;
       syncProviderInputs(form);
+      syncProviderModelControls();
       updateProviderInfoContent();
       updateProviderFieldPlaceholders();
+    });
+  }
+
+  if (providerModelPresetSelectEl) {
+    providerModelPresetSelectEl.addEventListener("change", handleProviderModelPresetChange);
+  }
+
+  if (providerModelInput) {
+    providerModelInput.addEventListener("input", () => {
+      syncProviderModelControls({ preserveInput: true });
     });
   }
 
@@ -630,6 +662,8 @@ document.addEventListener("DOMContentLoaded", () => {
       resetButtonAppearance(form, statusEl);
     });
   }
+
+  bindButtonPreviewInputs(form);
 
   if (historyListEl) {
     historyListEl.addEventListener("click", handleHistoryListClick);
@@ -1473,6 +1507,7 @@ function restoreOptions(form, statusEl) {
       providerSelectEl.value = currentProviderId;
     }
     syncProviderInputs(form, { force: true });
+    syncProviderModelControls({ force: true });
 
     form.promptInstruction.value =
       items.promptInstruction || DEFAULT_CONFIG.promptInstruction;
@@ -1541,6 +1576,8 @@ function restoreOptions(form, statusEl) {
     updateProviderFieldPlaceholders();
     renderCustomPlatforms();
     renderPlatformOptions();
+    updateHeroStats();
+    updateButtonPreview();
     if (platformSelectEl) {
       platformSelectEl.value = normalizePlatformId(selectedPlatformId);
     }
@@ -1681,8 +1718,12 @@ function applyLanguage(lang) {
   renderDomainFilters();
   syncPlatformUrlWithSelection(formEl, { preserveExisting: true });
   renderHistory();
+  renderLocalImages();
+  syncProviderModelControls({ preserveInput: true });
   updateProviderInfoContent();
   updateProviderFieldPlaceholders();
+  updateHeroStats();
+  updateButtonPreview();
 
   const elements = document.querySelectorAll("[data-i18n]");
   elements.forEach((el) => {
@@ -1775,6 +1816,7 @@ function resetButtonAppearance(form, statusEl) {
   if (form.buttonSize) {
     form.buttonSize.value = DEFAULT_CONFIG.buttonSize;
   }
+  updateButtonPreview();
   displayStatus(statusEl, translate("buttonAppearanceResetStatus"));
 }
 
@@ -1819,9 +1861,11 @@ function displayStatus(target, message, isError = false) {
   }
   target.textContent = message;
   target.style.color = isError ? "#f87171" : "rgba(37, 99, 235, 0.85)";
+  target.classList.toggle("has-message", Boolean(message));
   setTimeout(() => {
     target.textContent = "";
     target.style.color = "";
+    target.classList.remove("has-message");
   }, 3600);
 }
 
@@ -1887,6 +1931,136 @@ function renderProviderOptions() {
   providerSelectEl.value = normalizedId;
 }
 
+function syncProviderModelControls(options = {}) {
+  const { force = false, preserveInput = false } = options;
+  if (!providerModelInput) {
+    return;
+  }
+
+  const descriptor = getProviderDescriptor(currentProviderId);
+  const entry = getProviderSettingsFromState(currentProviderId);
+  const fallbackModel = entry.model || descriptor.defaultModel;
+  const currentInputValue = providerModelInput.value.trim();
+  const nextValue =
+    preserveInput && currentInputValue
+      ? currentInputValue
+      : entry.model || fallbackModel;
+
+  if (force || document.activeElement !== providerModelInput || !preserveInput) {
+    providerModelInput.value = nextValue;
+  }
+
+  if (providerModelPresetSelectEl) {
+    renderProviderModelPresetOptions(descriptor, providerModelInput.value.trim() || fallbackModel);
+  }
+
+  updateProviderInfoContent();
+  updateProviderFieldPlaceholders();
+  updateHeroStats();
+}
+
+function renderProviderModelPresetOptions(descriptor, activeModel) {
+  if (!providerModelPresetSelectEl || !descriptor) {
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  descriptor.models.forEach((model) => {
+    const option = document.createElement("option");
+    option.value = model.id;
+    option.textContent = model.label || model.id;
+    fragment.appendChild(option);
+  });
+
+  const customOption = document.createElement("option");
+  customOption.value = "__custom__";
+  customOption.textContent = translate("modelPresetCustomOption");
+  fragment.appendChild(customOption);
+
+  providerModelPresetSelectEl.innerHTML = "";
+  providerModelPresetSelectEl.appendChild(fragment);
+  providerModelPresetSelectEl.value = hasPresetModel(descriptor.id, activeModel)
+    ? activeModel
+    : "__custom__";
+}
+
+function handleProviderModelPresetChange(event) {
+  if (!providerModelInput) {
+    return;
+  }
+  const nextValue = event.target.value;
+  if (nextValue && nextValue !== "__custom__") {
+    providerModelInput.value = nextValue;
+    persistCurrentProviderInputs(formEl);
+    syncProviderModelControls({ preserveInput: true });
+    return;
+  }
+
+  providerModelInput.focus();
+  providerModelInput.select();
+  syncProviderModelControls({ preserveInput: true });
+}
+
+function updateHeroStats() {
+  const totalModels = LLM_PROVIDERS.reduce(
+    (sum, provider) => sum + (provider.models?.length || 0),
+    0
+  );
+  if (heroProviderCountEl) {
+    heroProviderCountEl.textContent = String(LLM_PROVIDERS.length);
+  }
+  if (heroModelCountEl) {
+    heroModelCountEl.textContent = String(totalModels);
+  }
+  if (heroWorkflowCountEl) {
+    heroWorkflowCountEl.textContent = "3";
+  }
+}
+
+function bindButtonPreviewInputs(form) {
+  [
+    form?.buttonIcon,
+    form?.buttonIconColor,
+    form?.buttonBackgroundColor,
+    form?.buttonShape,
+    form?.buttonSize
+  ]
+    .filter(Boolean)
+    .forEach((field) => {
+      field.addEventListener("input", updateButtonPreview);
+      field.addEventListener("change", updateButtonPreview);
+    });
+}
+
+function updateButtonPreview() {
+  if (!buttonPreviewButton || !formEl) {
+    return;
+  }
+
+  const icon = sanitizeButtonIcon(formEl.buttonIcon?.value ?? DEFAULT_CONFIG.buttonIcon);
+  const iconColor = sanitizeColorValue(
+    formEl.buttonIconColor?.value,
+    DEFAULT_CONFIG.buttonIconColor
+  );
+  const backgroundColor = sanitizeColorValue(
+    formEl.buttonBackgroundColor?.value,
+    DEFAULT_CONFIG.buttonBackgroundColor
+  );
+  const shape = normalizeButtonShape(formEl.buttonShape?.value);
+  const size = clampButtonSizeValue(
+    formEl.buttonSize?.value ?? DEFAULT_CONFIG.buttonSize
+  );
+
+  buttonPreviewButton.textContent = icon;
+  buttonPreviewButton.style.setProperty("--preview-button-size", `${size}px`);
+  buttonPreviewButton.style.setProperty("--preview-button-color", iconColor);
+  buttonPreviewButton.style.setProperty(
+    "--preview-button-background",
+    backgroundColor
+  );
+  buttonPreviewButton.dataset.shape = shape;
+}
+
 function renderPlatformOptions() {
   if (!platformSelectEl) {
     return;
@@ -1939,6 +2113,8 @@ function syncProviderInputs(form, options = {}) {
       providerModelInput.value = entry.model || "";
     }
   }
+
+  syncProviderModelControls({ force, preserveInput: !force });
 }
 
 function persistCurrentProviderInputs(form) {
@@ -1972,6 +2148,14 @@ function updateProviderInfoContent() {
 
   providerInfoContainer.hidden = false;
 
+  if (providerInfoNameEl) {
+    providerInfoNameEl.textContent = translate(descriptor.labelKey);
+  }
+
+  if (providerInfoModelCountEl) {
+    providerInfoModelCountEl.textContent = String(descriptor.models?.length || 0);
+  }
+
   if (providerInfoDescriptionEl) {
     providerInfoDescriptionEl.textContent = translate(descriptor.descriptionKey);
   }
@@ -1985,6 +2169,15 @@ function updateProviderInfoContent() {
       providerInfoPrimaryLink.hidden = false;
     } else {
       providerInfoPrimaryLink.hidden = true;
+    }
+  }
+
+  if (providerInfoDocsLink) {
+    if (descriptor.docsLink) {
+      providerInfoDocsLink.href = descriptor.docsLink;
+      providerInfoDocsLink.hidden = false;
+    } else {
+      providerInfoDocsLink.hidden = true;
     }
   }
 }
@@ -2018,6 +2211,13 @@ function updateProviderFieldPlaceholders() {
     if (modelPlaceholderKey) {
       providerModelInput.placeholder = translate(modelPlaceholderKey);
     }
+  }
+
+  if (providerModelPresetSelectEl) {
+    providerModelPresetSelectEl.setAttribute(
+      "aria-label",
+      translate("modelPresetLabel")
+    );
   }
 }
 
@@ -2464,39 +2664,15 @@ function sanitizeCustomPlatform(entry) {
   return { id, name, url };
 }
 
-function normalizeProviderId(value) {
-  if (!value) {
-    return DEFAULT_PROVIDER_ID;
-  }
-  const id = String(value).toLowerCase();
-  const descriptor = LLM_PROVIDERS.find((provider) => provider.id === id);
-  return descriptor ? descriptor.id : DEFAULT_PROVIDER_ID;
-}
-
-function inferProviderIdFromName(name) {
-  if (!name) {
-    return "";
-  }
-  const lower = String(name).toLowerCase();
-  if (lower.includes("zhipu") || lower.includes("glm") || lower.includes("智谱")) {
-    return "zhipu";
-  }
-  if (lower.includes("gemini")) {
-    return "gemini";
-  }
-  return "";
-}
-
 function getProviderDescriptor(providerId) {
-  const normalized = normalizeProviderId(providerId);
-  return LLM_PROVIDERS.find((provider) => provider.id === normalized) || LLM_PROVIDERS[0];
+  return getProviderById(providerId);
 }
 
 function getProviderSettingsFromState(providerId) {
   const normalized = normalizeProviderId(providerId);
   if (!providerSettingsState[normalized]) {
     providerSettingsState[normalized] = {
-      apiKey: PROVIDER_DEFAULTS[normalized]?.apiKey || "",
+      apiKey: "",
       model: PROVIDER_DEFAULTS[normalized]?.model || ""
     };
   }
@@ -2553,15 +2729,4 @@ function sanitizeProviderSettings(raw, legacySource = {}) {
 
 function cloneProviderSettings(settings) {
   return sanitizeProviderSettings(settings || {});
-}
-
-function createDefaultProviderSettings() {
-  const defaults = {};
-  Object.entries(PROVIDER_DEFAULTS).forEach(([id, entry]) => {
-    defaults[id] = {
-      apiKey: entry.apiKey,
-      model: entry.model
-    };
-  });
-  return defaults;
 }

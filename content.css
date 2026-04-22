@@ -1,44 +1,53 @@
 .i2p-overlay {
   position: absolute;
-  right: 8px;
-  bottom: 8px;
+  right: 10px;
+  bottom: 10px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: flex-end;
   pointer-events: none;
   z-index: 2147483646;
 }
 
 .i2p-button {
+  --i2p-shadow: 0 14px 24px rgba(9, 23, 43, 0.22);
   pointer-events: auto;
-  width: var(--i2p-button-size, 32px);
-  height: var(--i2p-button-size, 32px);
+  width: var(--i2p-button-size, 34px);
+  height: var(--i2p-button-size, 34px);
   border: none;
-  border-radius: var(--i2p-button-radius, 50%);
+  border-radius: var(--i2p-button-radius, 16px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   position: relative;
-  background: var(--i2p-button-background, rgba(37, 99, 235, 0.92));
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.14), transparent 45%),
+    var(--i2p-button-background, rgba(21, 94, 239, 0.95));
   color: var(--i2p-button-icon-color, #ffffff);
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease, filter 0.2s ease;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+  box-shadow: var(--i2p-shadow);
+  backdrop-filter: blur(10px);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease,
+    opacity 0.18s ease;
 }
 
-.i2p-button:hover:not(:disabled) {
-  background: var(--i2p-button-background, rgba(37, 99, 235, 0.92));
-  transform: translateY(-1px);
-  filter: brightness(1.05);
+.i2p-button:hover:not(:disabled),
+.i2p-button:focus-visible {
+  transform: translateY(-1px) scale(1.02);
+  filter: brightness(1.04);
+  box-shadow: 0 16px 28px rgba(9, 23, 43, 0.26);
+  outline: none;
 }
 
 .i2p-button:disabled {
   cursor: default;
-  opacity: 0.7;
+  opacity: 0.72;
   transform: none;
-  box-shadow: none;
-  background: var(--i2p-button-background, rgba(37, 99, 235, 0.92));
-  filter: grayscale(0.2);
+  box-shadow: 0 10px 18px rgba(9, 23, 43, 0.18);
+  filter: grayscale(0.12);
 }
 
 .i2p-button__icon {
@@ -65,7 +74,7 @@
   width: var(--i2p-spinner-size, 18px);
   height: var(--i2p-spinner-size, 18px);
   border-radius: 50%;
-  border: 2px solid transparent;
+  border: 2px solid rgba(255, 255, 255, 0.28);
   border-top-color: var(--i2p-button-spinner-color, #ffffff);
   opacity: 0;
   transition: opacity 0.15s ease;
@@ -78,49 +87,57 @@
 
 .i2p-toast-container {
   position: fixed;
-  inset: auto 16px 16px 16px;
+  inset: auto 18px 18px 18px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   z-index: 2147483647;
   pointer-events: none;
+  align-items: flex-end;
 }
 
 .i2p-toast {
   pointer-events: auto;
-  background: rgba(32, 32, 32, 0.9);
-  color: #fff;
-  padding: 10px 16px;
-  border-radius: 12px;
+  width: min(360px, calc(100vw - 36px));
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background:
+    linear-gradient(180deg, rgba(28, 39, 58, 0.96), rgba(13, 20, 32, 0.96));
+  color: #f8fafc;
   font-size: 13px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  font-family: "Avenir Next", "Segoe UI Variable", "SF Pro Display", sans-serif;
+  box-shadow: 0 20px 32px rgba(0, 0, 0, 0.28);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-width: 320px;
-  animation: i2p-toast-in 0.25s ease;
+  gap: 10px;
+  animation: i2p-toast-in 0.22s ease;
 }
 
 .i2p-toast button {
   align-self: flex-start;
   pointer-events: auto;
   border: none;
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
   border-radius: 12px;
-  padding: 4px 10px;
+  padding: 7px 12px;
   font-size: 12px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.18s ease, transform 0.18s ease;
 }
 
-.i2p-toast button:hover {
-  background: rgba(255, 255, 255, 0.28);
+.i2p-toast button:hover,
+.i2p-toast button:focus-visible {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  outline: none;
 }
 
 .i2p-toast--error {
-  background: rgba(176, 0, 32, 0.92);
+  background:
+    linear-gradient(180deg, rgba(137, 24, 44, 0.96), rgba(95, 16, 31, 0.96));
 }
 
 .i2p-dialog-backdrop {
@@ -130,80 +147,58 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(3px);
+  background: rgba(9, 18, 30, 0.54);
+  backdrop-filter: blur(6px);
   z-index: 2147483647;
 }
 
 .i2p-dialog {
-  width: min(420px, calc(100% - 32px));
-  background: #ffffff;
-  color: #0f172a;
-  border-radius: 20px;
+  width: min(460px, calc(100% - 32px));
   padding: 24px;
-  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.22);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 249, 240, 0.98), rgba(250, 243, 233, 0.98));
+  color: #10223b;
+  box-shadow: 0 28px 60px rgba(9, 18, 30, 0.24);
+  font-family: "Avenir Next", "Segoe UI Variable", "SF Pro Display", sans-serif;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-@media (prefers-color-scheme: dark) {
-  .i2p-dialog {
-    background: rgba(15, 23, 42, 0.92);
-    color: #f8fafc;
-    box-shadow: 0 24px 48px rgba(2, 6, 23, 0.55);
-  }
-}
-
 .i2p-dialog__title {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 .i2p-dialog__description {
   margin: 0;
   font-size: 13px;
-  line-height: 1.5;
-  color: rgba(15, 23, 42, 0.7);
-}
-
-@media (prefers-color-scheme: dark) {
-  .i2p-dialog__description {
-    color: rgba(226, 232, 240, 0.72);
-  }
+  line-height: 1.6;
+  color: rgba(16, 34, 59, 0.72);
 }
 
 .i2p-dialog__textarea {
   width: auto;
-  min-height: 120px;
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.4);
-  padding: 12px;
+  min-height: 132px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(16, 34, 59, 0.14);
   resize: vertical;
   font: inherit;
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 1.6;
   color: inherit;
-  background: rgba(248, 250, 252, 0.95);
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .i2p-dialog__textarea:focus {
-  outline: 2px solid rgba(59, 130, 246, 0.6);
-  outline-offset: 1px;
+  outline: none;
+  border-color: rgba(21, 94, 239, 0.32);
+  box-shadow: 0 0 0 4px rgba(21, 94, 239, 0.12);
   background: #ffffff;
-}
-
-@media (prefers-color-scheme: dark) {
-  .i2p-dialog__textarea {
-    background: rgba(30, 41, 59, 0.85);
-    border-color: rgba(148, 163, 184, 0.35);
-  }
-
-  .i2p-dialog__textarea:focus {
-    background: rgba(15, 23, 42, 0.95);
-  }
 }
 
 .i2p-dialog__actions {
@@ -215,47 +210,44 @@
 .i2p-dialog__button {
   border: none;
   border-radius: 999px;
-  padding: 8px 16px;
+  padding: 9px 16px;
   font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-  font-weight: 600;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
 
 .i2p-dialog__button--secondary {
-  background: rgba(148, 163, 184, 0.16);
+  background: rgba(16, 34, 59, 0.08);
   color: inherit;
 }
 
 .i2p-dialog__button--secondary:hover,
 .i2p-dialog__button--secondary:focus-visible {
-  background: rgba(148, 163, 184, 0.28);
+  background: rgba(16, 34, 59, 0.14);
   outline: none;
 }
 
 .i2p-dialog__button--primary {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, #155eef, #0f4dd8);
   color: #ffffff;
-  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.28);
+  box-shadow: 0 14px 24px rgba(21, 94, 239, 0.24);
 }
 
 .i2p-dialog__button--primary:hover,
 .i2p-dialog__button--primary:focus-visible {
   transform: translateY(-1px);
-  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.32);
+  box-shadow: 0 18px 28px rgba(21, 94, 239, 0.28);
   outline: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  .i2p-dialog__button--primary {
-    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
-    color: #0f172a;
-    box-shadow: 0 12px 26px rgba(14, 165, 233, 0.3);
+@keyframes i2p-spin {
+  from {
+    transform: rotate(0deg);
   }
 
-  .i2p-dialog__button--primary:hover,
-  .i2p-dialog__button--primary:focus-visible {
-    box-shadow: 0 16px 32px rgba(14, 165, 233, 0.36);
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -264,17 +256,9 @@
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes i2p-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
   }
 }

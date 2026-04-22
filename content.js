@@ -32,11 +32,11 @@ const DEFAULT_CONFIG = {
   customAspectRatio: "",
   promptRichness: "standard",
   domainFilters: [],
-  buttonIcon: "✎",
+  buttonIcon: "✦",
   buttonIconColor: "#ffffff",
-  buttonBackgroundColor: "#2563eb",
-  buttonShape: "circle",
-  buttonSize: 32
+  buttonBackgroundColor: "#155eef",
+  buttonShape: "rounded",
+  buttonSize: 34
 };
 
 const BUTTON_CLASS = "i2p-button";

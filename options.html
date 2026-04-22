@@ -1,301 +1,449 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>image2prompt Settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
 
-<head>
-  <meta charset="utf-8" />
-  <title>image2prompt Settings</title>
-  <link rel="stylesheet" href="options.css" />
-</head>
+  <body>
+    <main class="options-app">
+      <div class="options-layout">
+        <aside class="options-sidebar">
+          <header class="sidebar-header">
+            <p class="sidebar-header__eyebrow">image2prompt</p>
+            <h2 data-i18n="llmHeading"></h2>
+            <p data-i18n="llmDescription"></p>
+          </header>
 
-<body>
-  <main class="options-app">
-    <div class="options-shell">
-      <aside class="options-sidebar">
-        <header class="sidebar-header">
-          <h1 data-i18n="title"></h1>
-          <p data-i18n="subtitle"></p>
-        </header>
-        <nav class="sidebar-nav" aria-label="Settings sections">
-          <a href="#section-llm" class="sidebar-link" data-i18n="llmHeading"></a>
-          <a href="#section-prompt" class="sidebar-link" data-i18n="promptHeading"></a>
-          <a href="#section-filter" class="sidebar-link" data-i18n="filterHeading"></a>
-          <a href="#section-button" class="sidebar-link" data-i18n="buttonAppearanceHeading"></a>
-          <a href="#section-platform" class="sidebar-link" data-i18n="platformHeading"></a>
-        </nav>
-        <div class="sidebar-language">
-          <span class="language-switch__label" data-i18n="languageLabel"></span>
-          <div class="language-switch__buttons">
-            <button type="button" data-lang="en" class="language-switch__btn">
-              EN
-            </button>
-            <button type="button" data-lang="zh" class="language-switch__btn">
-              中文
-            </button>
-          </div>
-        </div>
-        <div class="sidebar-footer">
-          <a class="sidebar-github" href="https://github.com/pingan8787/image2prompt" target="_blank"
-            rel="noopener noreferrer" data-i18n="githubCta"></a>
-          <div class="version">
-            v0.1.7
-          </div>
-        </div>
-      </aside>
+          <nav class="sidebar-nav" aria-label="Settings sections">
+            <a href="#section-llm" class="sidebar-link" data-i18n="llmHeading"></a>
+            <a href="#section-prompt" class="sidebar-link" data-i18n="promptHeading"></a>
+            <a href="#section-filter" class="sidebar-link" data-i18n="filterHeading"></a>
+            <a href="#section-button" class="sidebar-link" data-i18n="buttonAppearanceHeading"></a>
+            <a href="#section-platform" class="sidebar-link" data-i18n="platformHeading"></a>
+          </nav>
 
-      <section class="options-card">
-        <div class="options-card__tabs">
-          <button type="button" class="options-tab is-active" data-view="settings" data-i18n="tabSettings"></button>
-          <button type="button" class="options-tab" data-view="history" data-i18n="tabHistory"></button>
-          <button type="button" class="options-tab" data-view="local" data-i18n="tabLocal"></button>
-        </div>
-
-        <form id="options-form" class="options-form" data-view-panel="settings">
-          <section class="options-section" id="section-llm">
-            <div class="options-section__heading">
-              <h2 data-i18n="llmHeading"></h2>
-              <p data-i18n="llmDescription"></p>
-            </div>
-            <label class="options-field">
-              <span data-i18n="llmProviderLabel"></span>
-              <select name="llmProvider"></select>
-              <small data-i18n="llmProviderHelp"></small>
-            </label>
-            <div class="options-section__key provider-info" data-provider-info>
-              <a class="provider-info__link" href="#" target="_blank" rel="noopener noreferrer">
-                <span class="provider-info__label"></span>
-              </a>
-            </div>
-            <label class="options-field">
-              <span data-i18n="apiKeyLabel"></span>
-              <input type="password" name="providerApiKey" autocomplete="off" />
-              <small data-provider-help="apiKey"></small>
-            </label>
-            <label class="options-field">
-              <span data-i18n="modelLabel"></span>
-              <input type="text" name="providerModel" />
-            </label>
-          </section>
-
-          <section class="options-section" id="section-prompt">
-            <div class="options-section__heading">
-              <h2 data-i18n="promptHeading"></h2>
-              <p data-i18n="promptDescription"></p>
-            </div>
-            <label class="options-field">
-              <span data-i18n="instructionLabel"></span>
-              <textarea name="promptInstruction" rows="4" data-i18n="instructionPlaceholder"
-                data-i18n-attr="placeholder"></textarea>
-            </label>
-            <label class="options-toggle">
-              <input type="checkbox" name="enableCustomPromptInput" />
-              <div class="options-toggle__visual" aria-hidden="true">
-                <div class="options-toggle__thumb"></div>
-              </div>
-              <div class="options-toggle__content">
-                <span class="options-toggle__label" data-i18n="customPromptToggleLabel"></span>
-                <small class="options-toggle__help" data-i18n="customPromptToggleHelp"></small>
-              </div>
-            </label>
-            <label class="options-toggle">
-              <input type="checkbox" name="removeWatermark" />
-              <div class="options-toggle__visual" aria-hidden="true">
-                <div class="options-toggle__thumb"></div>
-              </div>
-              <div class="options-toggle__content">
-                <span class="options-toggle__label" data-i18n="removeWatermarkLabel"></span>
-                <small class="options-toggle__help" data-i18n="removeWatermarkHelp"></small>
-              </div>
-            </label>
-            <label class="options-field">
-              <span data-i18n="aspectRatioLabel"></span>
-              <select name="aspectRatio">
-                <option value="auto" data-i18n="aspectRatioOptionAuto"></option>
-                <option value="21:9">21:9</option>
-                <option value="16:9">16:9</option>
-                <option value="3:2">3:2</option>
-                <option value="4:3">4:3</option>
-                <option value="1:1">1:1</option>
-                <option value="3:4">3:4</option>
-                <option value="2:3">2:3</option>
-                <option value="9:16">9:16</option>
-                <option value="custom" data-i18n="aspectRatioOptionCustom"></option>
-              </select>
-              <small data-i18n="aspectRatioHelp"></small>
-            </label>
-            <label class="options-field" data-custom-aspect-wrapper hidden>
-              <span data-i18n="customAspectRatioLabel"></span>
-              <input type="text" name="customAspectRatio" data-i18n="customAspectRatioPlaceholder"
-                data-i18n-attr="placeholder" disabled />
-              <small data-i18n="customAspectRatioHint"></small>
-            </label>
-            <label class="options-field">
-              <span data-i18n="promptLanguageLabel"></span>
-              <select name="promptLanguage"></select>
-              <small data-i18n="promptLanguageHelp"></small>
-            </label>
-            <label class="options-field">
-              <span data-i18n="imageTextTranslationLabel"></span>
-              <select name="imageTextTranslationTarget"></select>
-              <small data-i18n="imageTextTranslationHelp"></small>
-            </label>
-            <label class="options-field">
-              <span data-i18n="promptRichnessLabel"></span>
-              <select name="promptRichness">
-                <option value="concise" data-i18n="promptRichnessConcise"></option>
-                <option value="standard" data-i18n="promptRichnessStandard"></option>
-                <option value="detailed" data-i18n="promptRichnessDetailed"></option>
-                <option value="very-detailed" data-i18n="promptRichnessVeryDetailed"></option>
-              </select>
-              <small data-i18n="promptRichnessHelp"></small>
-            </label>
-          </section>
-
-          <section class="options-section" id="section-filter">
-            <div class="options-section__heading">
-              <h2 data-i18n="filterHeading"></h2>
-              <p data-i18n="filterDescription"></p>
-            </div>
-            <div class="options-grid">
-              <label class="options-field">
-                <span data-i18n="minWidthLabel"></span>
-                <input type="number" name="minImageWidth" min="0" />
-              </label>
-              <label class="options-field">
-                <span data-i18n="minHeightLabel"></span>
-                <input type="number" name="minImageHeight" min="0" />
-              </label>
-            </div>
-          </section>
-
-          <section class="options-section" id="section-domain-filters">
-            <div class="options-section__heading">
-              <h2 data-i18n="domainHeading"></h2>
-              <p data-i18n="domainDescription"></p>
-            </div>
-            <div class="domain-filter__control">
-              <input type="text" name="domainFilterInput" class="domain-filter__input"
-                data-i18n="domainInputPlaceholder" data-i18n-attr="placeholder" />
-              <button type="button" class="domain-filter__add" data-i18n="domainAddButton"></button>
-            </div>
-            <p class="domain-filter__empty" data-i18n="domainListEmpty"></p>
-            <ul class="domain-filter__list"></ul>
-          </section>
-
-          <section class="options-section" id="section-button">
-            <div class="options-section__heading">
-              <h2 data-i18n="buttonAppearanceHeading"></h2>
-              <p data-i18n="buttonAppearanceDescription"></p>
-            </div>
-            <div class="button-appearance__actions">
-              <button type="button" class="button-appearance__reset" data-action="reset-button-appearance"
-                data-i18n="buttonAppearanceResetLabel"></button>
-            </div>
-            <div class="options-grid">
-              <label class="options-field">
-                <span data-i18n="buttonIconLabel"></span>
-                <input type="text" name="buttonIcon" maxlength="3" data-i18n="buttonIconPlaceholder"
-                  data-i18n-attr="placeholder" />
-                <small data-i18n="buttonIconHelp"></small>
-              </label>
-              <label class="options-field">
-                <span data-i18n="buttonIconColorLabel"></span>
-                <input type="color" name="buttonIconColor" />
-              </label>
-              <label class="options-field">
-                <span data-i18n="buttonBackgroundColorLabel"></span>
-                <input type="color" name="buttonBackgroundColor" />
-              </label>
-              <label class="options-field">
-                <span data-i18n="buttonShapeLabel"></span>
-                <select name="buttonShape">
-                  <option value="circle" data-i18n="buttonShapeCircle"></option>
-                  <option value="rounded" data-i18n="buttonShapeRounded"></option>
-                  <option value="square" data-i18n="buttonShapeSquare"></option>
-                </select>
-              </label>
-              <label class="options-field">
-                <span data-i18n="buttonSizeLabel"></span>
-                <input type="number" name="buttonSize" min="20" max="80" />
-                <small data-i18n="buttonSizeHelp"></small>
-              </label>
-            </div>
-          </section>
-
-          <section class="options-section" id="section-platform">
-            <div class="options-section__heading">
-              <h2 data-i18n="platformHeading"></h2>
-              <p data-i18n="platformDescription"></p>
-            </div>
-            <label class="options-field">
-              <span data-i18n="platformSelectLabel"></span>
-              <select name="selectedPlatform"></select>
-              <small data-i18n="platformSelectHelp"></small>
-            </label>
-            <label class="options-field">
-              <span data-i18n="platformLabel"></span>
-              <input type="url" name="platformUrl" data-i18n="platformPlaceholder" data-i18n-attr="placeholder" />
-              <small data-i18n="platformHelp"></small>
-            </label>
-            <div class="platform-custom">
-              <h3 data-i18n="customPlatformsHeading"></h3>
-              <p class="platform-custom__empty" data-i18n="customPlatformsEmpty"></p>
-              <ul class="platform-custom__list"></ul>
-              <div class="platform-custom__form">
-                <input type="text" name="customPlatformName" data-i18n="customNamePlaceholder"
-                  data-i18n-attr="placeholder" />
-                <input type="url" name="customPlatformUrl" data-i18n="customUrlPlaceholder"
-                  data-i18n-attr="placeholder" />
-                <button type="button" class="platform-custom__add" data-i18n="customAddButton"></button>
-              </div>
-            </div>
-            <label class="options-toggle">
-              <input type="checkbox" name="autoOpenPlatform" />
-              <div class="options-toggle__visual" aria-hidden="true">
-                <div class="options-toggle__thumb"></div>
-              </div>
-              <div class="options-toggle__content">
-                <span class="options-toggle__label" data-i18n="autoOpenLabel"></span>
-                <small class="options-toggle__help" data-i18n="autoOpenHelp"></small>
-              </div>
-            </label>
-          </section>
-
-          <div class="options-actions">
-            <button type="submit" class="options-submit" data-i18n="saveButton"></button>
-            <span id="options-status" class="options-status" role="status"></span>
-          </div>
-        </form>
-
-        <section class="options-history" data-view-panel="history" hidden>
-          <div class="options-history__heading">
-            <h2 data-i18n="historyHeading"></h2>
-            <p data-i18n="historyDescription"></p>
-            <div class="history-actions">
-              <button type="button" class="history-export" data-action="exportHistory">
-                <span data-i18n="historyExportButton"></span>
+          <div class="sidebar-language">
+            <span class="language-switch__label" data-i18n="languageLabel"></span>
+            <div class="language-switch__buttons">
+              <button type="button" data-lang="en" class="language-switch__btn">
+                EN
+              </button>
+              <button type="button" data-lang="zh" class="language-switch__btn">
+                中文
               </button>
             </div>
           </div>
-          <p class="history-empty" data-i18n="historyEmpty"></p>
-          <ul class="history-list"></ul>
-        </section>
 
-        <section class="options-local" data-view-panel="local" hidden>
-          <div class="options-local__heading">
-            <h2 data-i18n="localHeading"></h2>
-            <p data-i18n="localDescription"></p>
+          <div class="sidebar-footer">
+            <a
+              class="sidebar-github"
+              href="https://github.com/pingan8787/image2prompt"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-i18n="githubCta"
+            ></a>
+            <div class="version">v0.1.7</div>
           </div>
-          <label class="local-upload">
-            <input type="file" name="localImageUpload" accept="image/*" multiple hidden />
-            <span class="local-upload__button" data-i18n="localUploadHint"></span>
-          </label>
-          <p class="local-empty" data-i18n="localListEmpty"></p>
-          <ul class="local-list"></ul>
-        </section>
-      </section>
-    </div>
-  </main>
-  <script src="options.js"></script>
-</body>
+        </aside>
 
+        <section class="options-stage">
+          <div class="options-stage__toolbar">
+            <div class="options-card__tabs">
+              <button
+                type="button"
+                class="options-tab is-active"
+                data-view="settings"
+                data-i18n="tabSettings"
+              ></button>
+              <button
+                type="button"
+                class="options-tab"
+                data-view="history"
+                data-i18n="tabHistory"
+              ></button>
+              <button
+                type="button"
+                class="options-tab"
+                data-view="local"
+                data-i18n="tabLocal"
+              ></button>
+            </div>
+          </div>
+
+          <form id="options-form" class="options-form" data-view-panel="settings">
+            <section class="settings-card settings-card--feature" id="section-llm">
+              <div class="options-section__heading">
+                <h2 data-i18n="llmHeading"></h2>
+                <p data-i18n="llmDescription"></p>
+              </div>
+
+              <div class="provider-workbench">
+                <div class="provider-workbench__column">
+                  <label class="options-field">
+                    <span data-i18n="llmProviderLabel"></span>
+                    <select name="llmProvider"></select>
+                    <small data-i18n="llmProviderHelp"></small>
+                  </label>
+
+                  <div class="provider-info" data-provider-info>
+                    <div class="provider-info__header">
+                      <div>
+                        <strong data-provider-name></strong>
+                        <p class="provider-info__description"></p>
+                      </div>
+                      <span class="provider-info__count">
+                        <strong data-provider-model-count>0</strong>
+                        <small data-i18n="heroStatModels"></small>
+                      </span>
+                    </div>
+
+                    <div class="provider-info__links">
+                      <a class="provider-info__link" href="#" target="_blank" rel="noopener noreferrer">
+                        <span class="provider-info__label"></span>
+                      </a>
+                      <a
+                        class="provider-info__docs"
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <span data-i18n="providerDocsLabel"></span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="provider-workbench__column">
+                  <label class="options-field">
+                    <span data-i18n="apiKeyLabel"></span>
+                    <input type="password" name="providerApiKey" autocomplete="off" />
+                    <small data-provider-help="apiKey"></small>
+                  </label>
+
+                  <div class="options-grid options-grid--tight">
+                    <label class="options-field">
+                      <span data-i18n="modelPresetLabel"></span>
+                      <select name="providerModelPreset"></select>
+                      <small data-i18n="modelPresetHelp"></small>
+                    </label>
+
+                    <label class="options-field">
+                      <span data-i18n="modelCustomLabel"></span>
+                      <input type="text" name="providerModel" />
+                      <small data-i18n="modelCustomHelp"></small>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="settings-card" id="section-prompt">
+              <div class="options-section__heading">
+                <h2 data-i18n="promptHeading"></h2>
+                <p data-i18n="promptDescription"></p>
+              </div>
+
+              <label class="options-field">
+                <span data-i18n="instructionLabel"></span>
+                <textarea
+                  name="promptInstruction"
+                  rows="5"
+                  data-i18n="instructionPlaceholder"
+                  data-i18n-attr="placeholder"
+                ></textarea>
+              </label>
+
+              <div class="options-grid">
+                <label class="options-field">
+                  <span data-i18n="aspectRatioLabel"></span>
+                  <select name="aspectRatio">
+                    <option value="auto" data-i18n="aspectRatioOptionAuto"></option>
+                    <option value="21:9">21:9</option>
+                    <option value="16:9">16:9</option>
+                    <option value="3:2">3:2</option>
+                    <option value="4:3">4:3</option>
+                    <option value="1:1">1:1</option>
+                    <option value="3:4">3:4</option>
+                    <option value="2:3">2:3</option>
+                    <option value="9:16">9:16</option>
+                    <option value="custom" data-i18n="aspectRatioOptionCustom"></option>
+                  </select>
+                  <small data-i18n="aspectRatioHelp"></small>
+                </label>
+
+                <label class="options-field" data-custom-aspect-wrapper hidden>
+                  <span data-i18n="customAspectRatioLabel"></span>
+                  <input
+                    type="text"
+                    name="customAspectRatio"
+                    data-i18n="customAspectRatioPlaceholder"
+                    data-i18n-attr="placeholder"
+                    disabled
+                  />
+                  <small data-i18n="customAspectRatioHint"></small>
+                </label>
+
+                <label class="options-field">
+                  <span data-i18n="promptLanguageLabel"></span>
+                  <select name="promptLanguage"></select>
+                  <small data-i18n="promptLanguageHelp"></small>
+                </label>
+
+                <label class="options-field">
+                  <span data-i18n="imageTextTranslationLabel"></span>
+                  <select name="imageTextTranslationTarget"></select>
+                  <small data-i18n="imageTextTranslationHelp"></small>
+                </label>
+
+                <label class="options-field">
+                  <span data-i18n="promptRichnessLabel"></span>
+                  <select name="promptRichness">
+                    <option value="concise" data-i18n="promptRichnessConcise"></option>
+                    <option value="standard" data-i18n="promptRichnessStandard"></option>
+                    <option value="detailed" data-i18n="promptRichnessDetailed"></option>
+                    <option value="very-detailed" data-i18n="promptRichnessVeryDetailed"></option>
+                  </select>
+                  <small data-i18n="promptRichnessHelp"></small>
+                </label>
+              </div>
+
+              <div class="options-toggle-group">
+                <label class="options-toggle">
+                  <input type="checkbox" name="enableCustomPromptInput" />
+                  <div class="options-toggle__visual" aria-hidden="true">
+                    <div class="options-toggle__thumb"></div>
+                  </div>
+                  <div class="options-toggle__content">
+                    <span class="options-toggle__label" data-i18n="customPromptToggleLabel"></span>
+                    <small class="options-toggle__help" data-i18n="customPromptToggleHelp"></small>
+                  </div>
+                </label>
+
+                <label class="options-toggle">
+                  <input type="checkbox" name="removeWatermark" />
+                  <div class="options-toggle__visual" aria-hidden="true">
+                    <div class="options-toggle__thumb"></div>
+                  </div>
+                  <div class="options-toggle__content">
+                    <span class="options-toggle__label" data-i18n="removeWatermarkLabel"></span>
+                    <small class="options-toggle__help" data-i18n="removeWatermarkHelp"></small>
+                  </div>
+                </label>
+              </div>
+            </section>
+
+            <section class="settings-card" id="section-filter">
+              <div class="options-section__heading">
+                <h2 data-i18n="filterHeading"></h2>
+                <p data-i18n="filterDescription"></p>
+              </div>
+
+              <div class="options-grid">
+                <label class="options-field">
+                  <span data-i18n="minWidthLabel"></span>
+                  <input type="number" name="minImageWidth" min="0" />
+                </label>
+                <label class="options-field">
+                  <span data-i18n="minHeightLabel"></span>
+                  <input type="number" name="minImageHeight" min="0" />
+                </label>
+              </div>
+
+              <section class="subcard" id="section-domain-filters">
+                <div class="options-section__heading options-section__heading--compact">
+                  <h3 data-i18n="domainHeading"></h3>
+                  <p data-i18n="domainDescription"></p>
+                </div>
+
+                <div class="domain-filter__control">
+                  <input
+                    type="text"
+                    name="domainFilterInput"
+                    class="domain-filter__input"
+                    data-i18n="domainInputPlaceholder"
+                    data-i18n-attr="placeholder"
+                  />
+                  <button type="button" class="domain-filter__add" data-i18n="domainAddButton"></button>
+                </div>
+                <p class="domain-filter__empty" data-i18n="domainListEmpty"></p>
+                <ul class="domain-filter__list"></ul>
+              </section>
+            </section>
+
+            <section class="settings-card" id="section-button">
+              <div class="options-section__heading">
+                <h2 data-i18n="buttonAppearanceHeading"></h2>
+                <p data-i18n="buttonAppearanceDescription"></p>
+              </div>
+
+              <div class="button-workbench">
+                <div class="button-workbench__controls">
+                  <div class="button-appearance__actions">
+                    <button
+                      type="button"
+                      class="button-appearance__reset"
+                      data-action="reset-button-appearance"
+                      data-i18n="buttonAppearanceResetLabel"
+                    ></button>
+                  </div>
+
+                  <div class="options-grid">
+                    <label class="options-field">
+                      <span data-i18n="buttonIconLabel"></span>
+                      <input
+                        type="text"
+                        name="buttonIcon"
+                        maxlength="3"
+                        data-i18n="buttonIconPlaceholder"
+                        data-i18n-attr="placeholder"
+                      />
+                      <small data-i18n="buttonIconHelp"></small>
+                    </label>
+                    <label class="options-field">
+                      <span data-i18n="buttonIconColorLabel"></span>
+                      <input type="color" name="buttonIconColor" />
+                    </label>
+                    <label class="options-field">
+                      <span data-i18n="buttonBackgroundColorLabel"></span>
+                      <input type="color" name="buttonBackgroundColor" />
+                    </label>
+                    <label class="options-field">
+                      <span data-i18n="buttonShapeLabel"></span>
+                      <select name="buttonShape">
+                        <option value="circle" data-i18n="buttonShapeCircle"></option>
+                        <option value="rounded" data-i18n="buttonShapeRounded"></option>
+                        <option value="square" data-i18n="buttonShapeSquare"></option>
+                      </select>
+                    </label>
+                    <label class="options-field">
+                      <span data-i18n="buttonSizeLabel"></span>
+                      <input type="number" name="buttonSize" min="20" max="80" />
+                      <small data-i18n="buttonSizeHelp"></small>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="button-preview-card">
+                  <div class="button-preview-card__header">
+                    <strong data-i18n="buttonPreviewLabel"></strong>
+                    <span data-i18n="buttonPreviewHint"></span>
+                  </div>
+                  <div class="button-preview-stage">
+                    <div class="button-preview-media">
+                      <div class="button-preview-media__frame"></div>
+                      <button
+                        type="button"
+                        class="button-preview"
+                        data-button-preview
+                        aria-hidden="true"
+                        tabindex="-1"
+                      >
+                        ✦
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="settings-card" id="section-platform">
+              <div class="options-section__heading">
+                <h2 data-i18n="platformHeading"></h2>
+                <p data-i18n="platformDescription"></p>
+              </div>
+
+              <div class="options-grid">
+                <label class="options-field">
+                  <span data-i18n="platformSelectLabel"></span>
+                  <select name="selectedPlatform"></select>
+                  <small data-i18n="platformSelectHelp"></small>
+                </label>
+                <label class="options-field">
+                  <span data-i18n="platformLabel"></span>
+                  <input
+                    type="url"
+                    name="platformUrl"
+                    data-i18n="platformPlaceholder"
+                    data-i18n-attr="placeholder"
+                  />
+                  <small data-i18n="platformHelp"></small>
+                </label>
+              </div>
+
+              <section class="subcard">
+                <div class="options-section__heading options-section__heading--compact">
+                  <h3 data-i18n="customPlatformsHeading"></h3>
+                  <p data-i18n="customPromptWarning"></p>
+                </div>
+                <p class="platform-custom__empty" data-i18n="customPlatformsEmpty"></p>
+                <ul class="platform-custom__list"></ul>
+                <div class="platform-custom__form">
+                  <input
+                    type="text"
+                    name="customPlatformName"
+                    data-i18n="customNamePlaceholder"
+                    data-i18n-attr="placeholder"
+                  />
+                  <input
+                    type="url"
+                    name="customPlatformUrl"
+                    data-i18n="customUrlPlaceholder"
+                    data-i18n-attr="placeholder"
+                  />
+                  <button type="button" class="platform-custom__add" data-i18n="customAddButton"></button>
+                </div>
+              </section>
+
+              <label class="options-toggle">
+                <input type="checkbox" name="autoOpenPlatform" />
+                <div class="options-toggle__visual" aria-hidden="true">
+                  <div class="options-toggle__thumb"></div>
+                </div>
+                <div class="options-toggle__content">
+                  <span class="options-toggle__label" data-i18n="autoOpenLabel"></span>
+                  <small class="options-toggle__help" data-i18n="autoOpenHelp"></small>
+                </div>
+              </label>
+            </section>
+
+          </form>
+
+          <section class="options-history" data-view-panel="history" hidden>
+            <div class="options-history__heading">
+              <h2 data-i18n="historyHeading"></h2>
+              <p data-i18n="historyDescription"></p>
+              <div class="history-actions">
+                <button type="button" class="history-export" data-action="exportHistory">
+                  <span data-i18n="historyExportButton"></span>
+                </button>
+              </div>
+            </div>
+            <p class="history-empty" data-i18n="historyEmpty"></p>
+            <ul class="history-list"></ul>
+          </section>
+
+          <section class="options-local" data-view-panel="local" hidden>
+            <div class="options-local__heading">
+              <h2 data-i18n="localHeading"></h2>
+              <p data-i18n="localDescription"></p>
+            </div>
+            <label class="local-upload">
+              <input type="file" name="localImageUpload" accept="image/*" multiple hidden />
+              <span class="local-upload__button" data-i18n="localUploadHint"></span>
+            </label>
+            <p class="local-empty" data-i18n="localListEmpty"></p>
+            <ul class="local-list"></ul>
+          </section>
+        </section>
+      </div>
+
+      <button type="submit" form="options-form" class="options-submit options-submit--floating" data-i18n="saveButton"></button>
+      <span id="options-status" class="options-status options-status--floating" role="status"></span>
+    </main>
+
+    <script type="module" src="options.js"></script>
+  </body>
 </html>

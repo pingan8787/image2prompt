@@ -1,15 +1,11 @@
-const DEFAULT_PROVIDER_ID = "gemini";
-
-const PROVIDER_DEFAULTS = {
-  gemini: {
-    name: "Gemini",
-    model: "gemini-2.5-flash"
-  },
-  zhipu: {
-    name: "Zhipu AI",
-    model: "glm-4v-plus"
-  }
-};
+import {
+  DEFAULT_PROVIDER_ID,
+  PROVIDER_DEFAULTS,
+  createDefaultProviderSettings,
+  getProviderList,
+  inferProviderIdFromName,
+  normalizeProviderId
+} from "./provider-catalog.js";
 
 const DEFAULT_CONFIG = {
   llmProvider: DEFAULT_PROVIDER_ID,
@@ -143,20 +139,20 @@ const PROMPT_LANGUAGE_RULES = {
   }
 };
 
-const LLM_PROVIDERS = {
-  gemini: {
-    id: "gemini",
-    name: PROVIDER_DEFAULTS.gemini.name,
-    defaultModel: PROVIDER_DEFAULTS.gemini.model,
-    generate: requestPromptFromGemini
-  },
-  zhipu: {
-    id: "zhipu",
-    name: PROVIDER_DEFAULTS.zhipu.name,
-    defaultModel: PROVIDER_DEFAULTS.zhipu.model,
-    generate: requestPromptFromZhipu
-  }
-};
+const LLM_PROVIDERS = Object.fromEntries(
+  getProviderList().map((provider) => [
+    provider.id,
+    {
+      id: provider.id,
+      name: provider.name,
+      defaultModel: provider.defaultModel,
+      generate:
+        provider.id === "zhipu"
+          ? requestPromptFromZhipu
+          : requestPromptFromGemini
+    }
+  ])
+);
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "generatePrompt") {
@@ -985,37 +981,4 @@ function sanitizeProviderSettings(raw, legacySource = {}) {
   }
 
   return result;
-}
-
-function createDefaultProviderSettings() {
-  const defaults = {};
-  Object.entries(PROVIDER_DEFAULTS).forEach(([id, descriptor]) => {
-    defaults[id] = {
-      apiKey: "",
-      model: descriptor.model
-    };
-  });
-  return defaults;
-}
-
-function normalizeProviderId(value) {
-  if (!value) {
-    return DEFAULT_PROVIDER_ID;
-  }
-  const id = String(value).toLowerCase();
-  return LLM_PROVIDERS[id]?.id || DEFAULT_PROVIDER_ID;
-}
-
-function inferProviderIdFromName(name) {
-  if (!name) {
-    return "";
-  }
-  const lower = String(name).toLowerCase();
-  if (lower.includes("zhipu") || lower.includes("glm") || lower.includes("智谱")) {
-    return "zhipu";
-  }
-  if (lower.includes("gemini")) {
-    return "gemini";
-  }
-  return "";
 }

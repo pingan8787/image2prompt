@@ -71,6 +71,7 @@
                 data-i18n="tabLocal"
               ></button>
             </div>
+            <p class="options-save-reminder" data-i18n="saveReminder"></p>
           </div>
 
           <form id="options-form" class="options-form" data-view-panel="settings">
@@ -317,6 +318,30 @@
                         <option value="rounded" data-i18n="buttonShapeRounded"></option>
                         <option value="square" data-i18n="buttonShapeSquare"></option>
                       </select>
+                    </label>
+                    <label class="options-field">
+                      <span data-i18n="buttonPositionLabel"></span>
+                      <select name="buttonPosition">
+                        <option value="top-left" data-i18n="buttonPositionTopLeft"></option>
+                        <option value="top-center" data-i18n="buttonPositionTopCenter"></option>
+                        <option value="top-right" data-i18n="buttonPositionTopRight"></option>
+                        <option value="middle-left" data-i18n="buttonPositionMiddleLeft"></option>
+                        <option value="center" data-i18n="buttonPositionCenter"></option>
+                        <option value="middle-right" data-i18n="buttonPositionMiddleRight"></option>
+                        <option value="bottom-left" data-i18n="buttonPositionBottomLeft"></option>
+                        <option value="bottom-center" data-i18n="buttonPositionBottomCenter"></option>
+                        <option value="bottom-right" data-i18n="buttonPositionBottomRight"></option>
+                      </select>
+                    </label>
+                    <label class="options-toggle options-toggle--compact">
+                      <input type="checkbox" name="buttonOutsideContainer" />
+                      <div class="options-toggle__visual" aria-hidden="true">
+                        <div class="options-toggle__thumb"></div>
+                      </div>
+                      <div class="options-toggle__content">
+                        <span class="options-toggle__label" data-i18n="buttonOutsideContainerLabel"></span>
+                        <small class="options-toggle__help" data-i18n="buttonOutsideContainerHelp"></small>
+                      </div>
                     </label>
                     <label class="options-field">
                       <span data-i18n="buttonSizeLabel"></span>

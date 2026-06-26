@@ -36,7 +36,9 @@ const DEFAULT_CONFIG = {
   buttonIconColor: "#ffffff",
   buttonBackgroundColor: "#155eef",
   buttonShape: "rounded",
-  buttonSize: 34
+  buttonSize: 34,
+  buttonPosition: "bottom-right",
+  buttonOutsideContainer: false
 };
 
 const BUTTON_CLASS = "i2p-button";
@@ -104,12 +106,15 @@ const UI_STRINGS = {
 
 let config = { ...DEFAULT_CONFIG };
 const imageState = new WeakMap();
+const buttonImageMap = new WeakMap();
+let globalButtonEventGuardsBound = false;
 
 init().catch((error) => {
   console.error("[Image2Prompt] Failed to initialize content script:", error);
 });
 
 async function init() {
+  bindGlobalButtonEventGuards();
   await loadConfig();
   watchForConfigChanges();
   observeDomMutations();
@@ -164,7 +169,9 @@ function watchForConfigChanges() {
       key === "buttonIconColor" ||
       key === "buttonBackgroundColor" ||
       key === "buttonShape" ||
-      key === "buttonSize"
+      key === "buttonSize" ||
+      key === "buttonPosition" ||
+      key === "buttonOutsideContainer"
     ) {
       shouldUpdateButtons = true;
     }
@@ -295,6 +302,7 @@ function ensureOverlay(img) {
 
   if (state.overlay && state.button) {
     applyButtonLabels(state.button);
+    applyOverlayPosition(state.overlay);
     return;
   }
 
@@ -302,6 +310,7 @@ function ensureOverlay(img) {
 
   const overlay = document.createElement("div");
   overlay.className = OVERLAY_CLASS;
+  applyOverlayPosition(overlay);
 
   const button = document.createElement("button");
   button.type = "button";
@@ -310,16 +319,9 @@ function ensureOverlay(img) {
   button.classList.remove("is-loading");
   button.removeAttribute("aria-busy");
   applyButtonLabels(button);
+  buttonImageMap.set(button, img);
 
-  button.addEventListener(
-    "click",
-    (event) => {
-      event.stopPropagation();
-      event.preventDefault();
-      triggerPrompt(button, img);
-    },
-    { passive: false }
-  );
+  bindButtonEventGuards(overlay, button);
 
   overlay.appendChild(button);
   parent.appendChild(overlay);
@@ -330,6 +332,100 @@ function ensureOverlay(img) {
   state.parentAdjusted = parentState.adjusted;
 }
 
+function bindButtonEventGuards(overlay, button) {
+  bindGlobalButtonEventGuards();
+
+  const guardedEvents = [
+    "pointerdown",
+    "pointerup",
+    "mousedown",
+    "mouseup",
+    "dblclick",
+    "contextmenu",
+    "touchstart",
+    "touchend"
+  ];
+
+  guardedEvents.forEach((eventName) => {
+    overlay.addEventListener(eventName, stopCaptureButtonPropagation, {
+      capture: true,
+      passive: false
+    });
+    button.addEventListener(eventName, stopCaptureButtonPropagation, {
+      capture: true,
+      passive: false
+    });
+  });
+}
+
+function bindGlobalButtonEventGuards() {
+  if (globalButtonEventGuardsBound) {
+    return;
+  }
+  globalButtonEventGuardsBound = true;
+
+  [
+    "pointerdown",
+    "pointerup",
+    "mousedown",
+    "mouseup",
+    "dblclick",
+    "contextmenu",
+    "touchstart",
+    "touchend"
+  ].forEach((eventName) => {
+    window.addEventListener(eventName, stopPluginButtonEventFromPage, {
+      capture: true,
+      passive: false
+    });
+  });
+
+  window.addEventListener("click", handlePluginButtonClick, {
+    capture: true,
+    passive: false
+  });
+}
+
+function handlePluginButtonClick(event) {
+  const button = getPluginButtonFromEvent(event);
+  if (!button) {
+    return;
+  }
+
+  stopCaptureButtonEvent(event);
+  const img = buttonImageMap.get(button);
+  if (img) {
+    triggerPrompt(button, img);
+  }
+}
+
+function stopPluginButtonEventFromPage(event) {
+  if (!getPluginButtonFromEvent(event)) {
+    return;
+  }
+  stopCaptureButtonPropagation(event);
+}
+
+function getPluginButtonFromEvent(event) {
+  const target = event.target;
+  if (!(target instanceof Element)) {
+    return null;
+  }
+  return target.closest(`.${BUTTON_CLASS}`);
+}
+
+function stopCaptureButtonEvent(event) {
+  event.preventDefault();
+  stopCaptureButtonPropagation(event);
+}
+
+function stopCaptureButtonPropagation(event) {
+  event.stopPropagation();
+  if (typeof event.stopImmediatePropagation === "function") {
+    event.stopImmediatePropagation();
+  }
+}
+
 function removeOverlay(img) {
   const state = imageState.get(img);
   if (!state || !state.overlay) {
@@ -337,6 +433,9 @@ function removeOverlay(img) {
   }
 
   state.overlay.remove();
+  if (state.button) {
+    buttonImageMap.delete(state.button);
+  }
   if (state.parent) {
     releaseParentPosition(state.parent, state.parentAdjusted);
   }
@@ -719,7 +818,10 @@ function promptForCustomInstruction() {
 function updateAllButtonLabels() {
   document
     .querySelectorAll(`.${BUTTON_CLASS}`)
-    .forEach((button) => applyButtonLabels(button));
+    .forEach((button) => {
+      applyButtonLabels(button);
+      applyOverlayPosition(button.closest(`.${OVERLAY_CLASS}`));
+    });
 }
 
 function applyButtonLabels(button) {
@@ -778,6 +880,36 @@ function applyButtonAppearance(button) {
   button.style.setProperty("--i2p-button-spinner-color", iconColor);
 }
 
+function applyOverlayPosition(overlay) {
+  if (!overlay) {
+    return;
+  }
+  const normalized = normalizeButtonPosition(config.buttonPosition);
+  const outsideContainer =
+    config.buttonOutsideContainer === true && normalized !== "center";
+  const offset = outsideContainer
+    ? `calc(-${Math.round(clampButtonSize(config.buttonSize) / 2)}px - 8px)`
+    : "10px";
+  const map = {
+    "top-left": { top: offset, left: offset, transform: "" },
+    "top-center": { top: offset, left: "50%", transform: "translateX(-50%)" },
+    "top-right": { top: offset, right: offset, transform: "" },
+    "middle-left": { top: "50%", left: offset, transform: "translateY(-50%)" },
+    center: { top: "50%", left: "50%", transform: "translate(-50%, -50%)" },
+    "middle-right": { top: "50%", right: offset, transform: "translateY(-50%)" },
+    "bottom-left": { bottom: offset, left: offset, transform: "" },
+    "bottom-center": { bottom: offset, left: "50%", transform: "translateX(-50%)" },
+    "bottom-right": { bottom: offset, right: offset, transform: "" }
+  };
+  const styles = map[normalized] || map[DEFAULT_CONFIG.buttonPosition];
+  ["top", "right", "bottom", "left", "transform"].forEach((property) => {
+    overlay.style[property] = "";
+  });
+  Object.entries(styles).forEach(([property, value]) => {
+    overlay.style[property] = value;
+  });
+}
+
 function getButtonBackgroundColor() {
   return sanitizeCssColor(
     config.buttonBackgroundColor,
@@ -820,6 +952,26 @@ function normalizeButtonShape(value) {
   return normalized === "rounded" || normalized === "square" || normalized === "circle"
     ? normalized
     : DEFAULT_CONFIG.buttonShape;
+}
+
+function normalizeButtonPosition(value) {
+  if (typeof value !== "string") {
+    return DEFAULT_CONFIG.buttonPosition;
+  }
+  const normalized = value.trim().toLowerCase();
+  return [
+    "top-left",
+    "top-center",
+    "top-right",
+    "middle-left",
+    "center",
+    "middle-right",
+    "bottom-left",
+    "bottom-center",
+    "bottom-right"
+  ].includes(normalized)
+    ? normalized
+    : DEFAULT_CONFIG.buttonPosition;
 }
 
 function getUiLanguage() {

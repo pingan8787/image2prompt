@@ -40,7 +40,9 @@ const DEFAULT_CONFIG = {
   buttonIconColor: "#ffffff",
   buttonBackgroundColor: "#155eef",
   buttonShape: "rounded",
-  buttonSize: 34
+  buttonSize: 34,
+  buttonPosition: "bottom-right",
+  buttonOutsideContainer: false
 };
 
 const TEXT_CONTENT = {
@@ -137,7 +139,8 @@ const TEXT_CONTENT = {
     minWidthLabel: "Minimum width (px)",
     minHeightLabel: "Minimum height (px)",
     buttonAppearanceHeading: "Capture button",
-    buttonAppearanceDescription: "Customize the floating button shown on images.",
+    saveReminder: "Set your model provider, model, and API key first. After any change, click Save settings at the bottom.",
+    buttonAppearanceDescription: "Customize the floating capture button shown on images.",
     buttonIconLabel: "Button icon",
     buttonIconPlaceholder: "e.g. ✎ or 🎨",
     buttonIconHelp: "Use up to 3 characters or an emoji.",
@@ -147,6 +150,18 @@ const TEXT_CONTENT = {
     buttonShapeCircle: "Circle",
     buttonShapeRounded: "Rounded square",
     buttonShapeSquare: "Square",
+    buttonPositionLabel: "Button position",
+    buttonPositionTopLeft: "Top left",
+    buttonPositionTopCenter: "Top center",
+    buttonPositionTopRight: "Top right",
+    buttonPositionMiddleLeft: "Middle left",
+    buttonPositionCenter: "Center",
+    buttonPositionMiddleRight: "Middle right",
+    buttonPositionBottomLeft: "Bottom left",
+    buttonPositionBottomCenter: "Bottom center",
+    buttonPositionBottomRight: "Bottom right",
+    buttonOutsideContainerLabel: "Show outside image",
+    buttonOutsideContainerHelp: "Places the button just outside the selected edge. Center stays inside the image.",
     buttonSizeLabel: "Button size (px)",
     buttonSizeHelp: "Applies to both width and height.",
     buttonAppearanceResetLabel: "Reset to defaults",
@@ -289,7 +304,8 @@ const TEXT_CONTENT = {
     minWidthLabel: "最小宽度（像素）",
     minHeightLabel: "最小高度（像素）",
     buttonAppearanceHeading: "按钮外观",
-    buttonAppearanceDescription: "自定义图片右下角的悬浮按钮样式。",
+    saveReminder: "首次使用请先设置模型提供商、模型和 API 密钥；修改任何内容后，记得点击下方的“保存设置”。",
+    buttonAppearanceDescription: "自定义图片上的悬浮按钮样式和显示位置。",
     buttonIconLabel: "按钮图标",
     buttonIconPlaceholder: "例如 ✎ 或 🎨",
     buttonIconHelp: "支持 1-3 个字符或表情符号。",
@@ -299,12 +315,24 @@ const TEXT_CONTENT = {
     buttonShapeCircle: "圆形",
     buttonShapeRounded: "圆角方形",
     buttonShapeSquare: "方形",
+    buttonPositionLabel: "按钮位置",
+    buttonPositionTopLeft: "左上",
+    buttonPositionTopCenter: "中上",
+    buttonPositionTopRight: "右上",
+    buttonPositionMiddleLeft: "左中",
+    buttonPositionCenter: "中间",
+    buttonPositionMiddleRight: "右中",
+    buttonPositionBottomLeft: "左下",
+    buttonPositionBottomCenter: "中下",
+    buttonPositionBottomRight: "右下",
+    buttonOutsideContainerLabel: "显示到容器外",
+    buttonOutsideContainerHelp: "开启后按钮会显示在所选方向的图片外侧；中间位置仍显示在图片内。",
     buttonSizeLabel: "按钮尺寸 (px)",
     buttonSizeHelp: "同时作用于宽度和高度。",
     buttonAppearanceResetLabel: "恢复默认样式",
     buttonAppearanceResetStatus: "按钮样式已恢复默认值，记得点击保存。",
     buttonPreviewLabel: "实时预览",
-    buttonPreviewHint: "这里展示图片右下角按钮的大致效果。",
+    buttonPreviewHint: "这里展示按钮在图片上的大致效果。",
     platformHeading: "AI 平台",
     platformDescription: "选择打开生成提示词的平台。",
     platformLabel: "平台链接模板",
@@ -376,6 +404,17 @@ const PROMPT_LANGUAGES = [
 ];
 
 const BUTTON_SHAPES = ["circle", "rounded", "square"];
+const BUTTON_POSITIONS = [
+  "top-left",
+  "top-center",
+  "top-right",
+  "middle-left",
+  "center",
+  "middle-right",
+  "bottom-left",
+  "bottom-center",
+  "bottom-right"
+];
 
 const BUILTIN_PLATFORMS = [
   {
@@ -1550,6 +1589,12 @@ function restoreOptions(form, statusEl) {
         items.buttonSize ?? DEFAULT_CONFIG.buttonSize
       );
     }
+    if (form.buttonPosition) {
+      form.buttonPosition.value = normalizeButtonPosition(items.buttonPosition);
+    }
+    if (form.buttonOutsideContainer) {
+      form.buttonOutsideContainer.checked = items.buttonOutsideContainer === true;
+    }
     if (form.autoOpenPlatform) {
       form.autoOpenPlatform.checked = items.autoOpenPlatform !== false;
     }
@@ -1662,6 +1707,8 @@ function saveOptions(form, statusEl) {
     buttonSize: clampButtonSizeValue(
       form.buttonSize?.value ?? DEFAULT_CONFIG.buttonSize
     ),
+    buttonPosition: normalizeButtonPosition(form.buttonPosition?.value),
+    buttonOutsideContainer: form.buttonOutsideContainer?.checked ?? false,
     language: currentLanguage
   };
   currentPromptLanguageSelection = payload.promptLanguage;
@@ -1816,6 +1863,12 @@ function resetButtonAppearance(form, statusEl) {
   if (form.buttonSize) {
     form.buttonSize.value = DEFAULT_CONFIG.buttonSize;
   }
+  if (form.buttonPosition) {
+    form.buttonPosition.value = DEFAULT_CONFIG.buttonPosition;
+  }
+  if (form.buttonOutsideContainer) {
+    form.buttonOutsideContainer.checked = DEFAULT_CONFIG.buttonOutsideContainer;
+  }
   updateButtonPreview();
   displayStatus(statusEl, translate("buttonAppearanceResetStatus"));
 }
@@ -1844,6 +1897,10 @@ function sanitizeColorValue(value, fallback = DEFAULT_CONFIG.buttonIconColor) {
 
 function normalizeButtonShape(value) {
   return BUTTON_SHAPES.includes(value) ? value : DEFAULT_CONFIG.buttonShape;
+}
+
+function normalizeButtonPosition(value) {
+  return BUTTON_POSITIONS.includes(value) ? value : DEFAULT_CONFIG.buttonPosition;
 }
 
 function clampButtonSizeValue(value, fallback = DEFAULT_CONFIG.buttonSize) {
@@ -2023,7 +2080,9 @@ function bindButtonPreviewInputs(form) {
     form?.buttonIconColor,
     form?.buttonBackgroundColor,
     form?.buttonShape,
-    form?.buttonSize
+    form?.buttonSize,
+    form?.buttonPosition,
+    form?.buttonOutsideContainer
   ]
     .filter(Boolean)
     .forEach((field) => {
@@ -2050,6 +2109,8 @@ function updateButtonPreview() {
   const size = clampButtonSizeValue(
     formEl.buttonSize?.value ?? DEFAULT_CONFIG.buttonSize
   );
+  const position = normalizeButtonPosition(formEl.buttonPosition?.value);
+  const outsideContainer = formEl.buttonOutsideContainer?.checked === true;
 
   buttonPreviewButton.textContent = icon;
   buttonPreviewButton.style.setProperty("--preview-button-size", `${size}px`);
@@ -2059,6 +2120,40 @@ function updateButtonPreview() {
     backgroundColor
   );
   buttonPreviewButton.dataset.shape = shape;
+  applyPreviewButtonPosition(buttonPreviewButton, position, {
+    outsideContainer,
+    size
+  });
+}
+
+function applyPreviewButtonPosition(button, position, options = {}) {
+  if (!button) {
+    return;
+  }
+  const normalized = normalizeButtonPosition(position);
+  const outsideContainer =
+    options.outsideContainer === true && normalized !== "center";
+  const offset = outsideContainer
+    ? `calc(-${Math.round((Number(options.size) || DEFAULT_CONFIG.buttonSize) / 2)}px - 8px)`
+    : "16px";
+  const map = {
+    "top-left": { top: offset, left: offset, transform: "" },
+    "top-center": { top: offset, left: "50%", transform: "translateX(-50%)" },
+    "top-right": { top: offset, right: offset, transform: "" },
+    "middle-left": { top: "50%", left: offset, transform: "translateY(-50%)" },
+    center: { top: "50%", left: "50%", transform: "translate(-50%, -50%)" },
+    "middle-right": { top: "50%", right: offset, transform: "translateY(-50%)" },
+    "bottom-left": { bottom: offset, left: offset, transform: "" },
+    "bottom-center": { bottom: offset, left: "50%", transform: "translateX(-50%)" },
+    "bottom-right": { bottom: offset, right: offset, transform: "" }
+  };
+  const styles = map[normalized] || map[DEFAULT_CONFIG.buttonPosition];
+  ["top", "right", "bottom", "left", "transform"].forEach((property) => {
+    button.style[property] = "";
+  });
+  Object.entries(styles).forEach(([property, value]) => {
+    button.style[property] = value;
+  });
 }
 
 function renderPlatformOptions() {

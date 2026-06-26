@@ -1,12 +1,10 @@
 .i2p-overlay {
   position: absolute;
-  right: 10px;
-  bottom: 10px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   pointer-events: none;
-  z-index: 2147483646;
+  z-index: 999999;
 }
 
 .i2p-button {

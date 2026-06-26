@@ -237,6 +237,15 @@ body::before {
   gap: 16px;
 }
 
+.options-save-reminder {
+  max-width: 430px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: right;
+}
+
 .options-card__tabs {
   display: inline-flex;
   gap: 8px;
@@ -711,7 +720,7 @@ input[type="color"] {
 .button-preview-stage {
   flex: 1;
   min-height: 220px;
-  padding: 18px;
+  padding: 34px;
   border-radius: 20px;
   background:
     linear-gradient(135deg, rgba(18, 35, 61, 0.08), rgba(21, 94, 239, 0.12)),
@@ -724,7 +733,7 @@ input[type="color"] {
   height: 100%;
   min-height: 180px;
   border-radius: 18px;
-  overflow: hidden;
+  overflow: visible;
   background:
     linear-gradient(135deg, rgba(255, 155, 101, 0.35), transparent 45%),
     linear-gradient(180deg, #617695 0%, #304767 100%);
@@ -740,8 +749,6 @@ input[type="color"] {
 
 .button-preview {
   position: absolute;
-  right: 16px;
-  bottom: 16px;
   width: var(--preview-button-size, 34px);
   height: var(--preview-button-size, 34px);
   border: none;
@@ -1024,6 +1031,16 @@ a {
   .options-app {
     width: min(100%, calc(100% - 20px));
     padding-top: 18px;
+  }
+
+  .options-stage__toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .options-save-reminder {
+    max-width: none;
+    text-align: left;
   }
 
   .settings-card,

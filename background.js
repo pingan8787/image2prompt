@@ -30,8 +30,22 @@ const DEFAULT_CONFIG = {
   enableCustomPromptInput: false,
   aspectRatio: "auto",
   customAspectRatio: "",
-  promptRichness: "standard"
+  promptRichness: "standard",
+  domainFilters: [],
+  buttonIcon: "✦",
+  buttonIconColor: "#ffffff",
+  buttonBackgroundColor: "#155eef",
+  buttonShape: "rounded",
+  buttonSize: 34,
+  buttonPosition: "bottom-right",
+  buttonOutsideContainer: false
 };
+
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === "install") {
+    chrome.runtime.openOptionsPage();
+  }
+});
 
 const HISTORY_STORAGE_KEY = "generationHistory";
 const MAX_HISTORY_ENTRIES = 100;
